@@ -1,0 +1,7 @@
+package ru.eltech.enums;
+
+public enum Length { ONE(1), TWO(2), THREE(3), FOUR(4);
+    private final Integer size;
+    Length(Integer size) { this.size = size; }
+    public Integer getSize() { return size; }
+}
