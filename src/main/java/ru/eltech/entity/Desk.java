@@ -1,27 +1,27 @@
 package ru.eltech.entity;
 
-import ru.eltech.enums.CheckerFill;
-import ru.eltech.enums.Layout;
+import ru.eltech.enums.CellStatus;
+import ru.eltech.enums.ShipLayout;
 import ru.eltech.exceptions.IncorrectLocationEx;
 
 public class Desk {
 
-    public Checker[][] matrix;
+    public Cell[][] matrix;
     private ShipManager shipManager;
 
 
     public Desk() {
-        matrix = new Checker[10][10];
+        matrix = new Cell[10][10];
         shipManager = new ShipManager();
     }
 
     public boolean attack(int x, int y) {
         if (matrix[x][y].isShip) {
-            matrix[x][y].checkerFill = CheckerFill.HIT;
+            matrix[x][y].cellStatus = CellStatus.HIT;
             return true;
         }
         else {
-            matrix[x][y].checkerFill = CheckerFill.MISS;
+            matrix[x][y].cellStatus = CellStatus.MISS;
             return false;
         }
     }
@@ -30,19 +30,19 @@ public class Desk {
         if (!possibleShip(x, y, shipManager.ship[index])) {
             throw new IncorrectLocationEx("Некорректное расположение корабля!");
         }
-        for (int i = 0; i < shipManager.ship[index].length.getSize(); i++) {
+        for (int i = 0; i < shipManager.ship[index].shipLength.getSize(); i++) {
             matrix[x][y].addShip();
-            if (shipManager.ship[index].layout == Layout.HORIZONTAL) x++;
+            if (shipManager.ship[index].shipLayout == ShipLayout.HORIZONTAL) x++;
             else y++;
         }
     }
 
     private boolean possibleShip(int x, int y, Ship ship) {
         if (matrix[x][y].isShip) return false;
-        for (int i = 0; i < ship.length.getSize(); i++) {
+        for (int i = 0; i < ship.shipLength.getSize(); i++) {
             if (x > 10 || y > 10) return false;
             if (checkerCheck(x, y)) return false;
-            if (ship.layout == Layout.HORIZONTAL) x++;
+            if (ship.shipLayout == ShipLayout.HORIZONTAL) x++;
             else y++;
         }
         return true;

@@ -1,7 +1,7 @@
 package ru.eltech.entity;
 
-import ru.eltech.enums.Layout;
-import ru.eltech.enums.Length;
+import ru.eltech.enums.ShipLayout;
+import ru.eltech.enums.ShipLength;
 
 public class ShipManager {
 
@@ -13,9 +13,9 @@ public class ShipManager {
         }
     }
 
-    public void addShip(Length length, Layout layout) {
+    public void addShip(ShipLength shipLength, ShipLayout shipLayout) {
         for (int i = 0; i < ship.length; i++) {
-            if (ship[i] == null) ship[i] = new Ship(length, layout, i);
+            if (ship[i] == null) ship[i] = new Ship(shipLength, shipLayout, i);
         }
     }
 }

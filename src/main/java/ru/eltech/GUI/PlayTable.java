@@ -2,19 +2,26 @@ package ru.eltech.GUI;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
-public class PlayTable extends JTable {
-    private final String[] str = {"", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
+public class PlayTable extends JPanel {
+    private JTable table;
+    private DefaultTableModel model;
+
     public PlayTable() {
-        DefaultTableModel model = new DefaultTableModel(11, 11);
-        setModel(model);
+        setLayout(new BorderLayout());
+        String[] columnHeaders = {" ", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
 
-        for (int column = 0; column < getColumnCount(); column++) {
-            getColumnModel().getColumn(column).setPreferredWidth(30);
+        model = new DefaultTableModel();
+        model.setRowCount(11);
+        model.setColumnCount(11);
+        for (int i = 1; i < 11; i++) {
+            model.setValueAt(i, i, 0);
+            model.setValueAt(columnHeaders[i], 0, i);
         }
-        setRowHeight(30);
 
-        for (int i = 1; i < getRowCount(); i++) setValueAt(i, i, 0);
-        for (int i = 1; i < getColumnCount(); i++) setValueAt(str[i], 0, i);
+        table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
     }
 }
