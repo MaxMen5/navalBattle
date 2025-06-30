@@ -1,6 +1,7 @@
 package ru.eltech.GUI;
 
-import ru.eltech.entity.Game;
+
+import ru.eltech.GUI.renderers.ColorRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,9 +12,9 @@ import java.awt.event.WindowEvent;
 
 public class MainFrame extends JDialog {
 
-    private PlayTable table;
+    private PlayTable playerTable;
     private PlayTable computerTable;
-    private Game game = new Game();
+    private JTextPane logPane;
 
     public MainFrame() {
         setTitle("Морской бой");
@@ -42,21 +43,79 @@ public class MainFrame extends JDialog {
     }
 
     private void createGUI() {
-        table = new PlayTable();
+        playerTable = new PlayTable();
         computerTable = new PlayTable();
-        JLabel label1 = new JLabel("Ваше поле");
-        add(label1, BorderLayout.NORTH);
-        add(table, BorderLayout.CENTER);
+        logPane = new JTextPane();
 
-        computerTable.addMouseListener(new MouseAdapter() {
+        JPanel playerPanel = createTablePanel("Ваше поле", playerTable);
+        JPanel computerPanel = createTablePanel("Поле противника", computerTable);
+
+        int tablePanelWidth = playerTable.getPreferredSize().width;
+        int tablePanelHeight = playerTable.getPreferredSize().height;
+
+        playerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 24));
+        computerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 24));
+
+        JTextPane logPane = new JTextPane();
+        logPane.setEditable(false);
+        logPane.setPreferredSize(new Dimension(tablePanelWidth * 2, 100)); // Ширина двух таблиц
+        JScrollPane logScrollPane = new JScrollPane(logPane);
+
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 50, 10, 50);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(computerPanel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        add(playerPanel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0;
+        add(logScrollPane, gbc);
+
+        logPane.setText("Расставьте корабли на своем поле. Нужно расставить:\n1 четырехпалубник\n" +
+                "2 трехпалубника\n3 двухпалубника\n4 однопалубника\nПосле завершения нажмите кнопку \"#\" на своем поле.");
+
+        ColorRenderer renderer = new ColorRenderer();
+        playerTable.table.setDefaultRenderer(Object.class, renderer);
+
+
+        // Добавляем обработчик кликов
+        playerTable.table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!game.isComputerMove) {
-                    // int row = computerTable.rowAtPoint(e.getPoint());
-                    // int col = computerTable.columnAtPoint(e.getPoint());
-                    // boolean result = game.computerDesk.attack(row - 1, col - 1);
+                int row = playerTable.table.rowAtPoint(e.getPoint());
+                int col = playerTable.table.columnAtPoint(e.getPoint());
+
+                if (row >= 1 && col >= 1) {
+
+                    renderer.toggleCellColor(row, col);
+                    playerTable.table.repaint();
                 }
             }
         });
+    }
+
+    private JPanel createTablePanel(String title, JComponent table) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel label = new JLabel(title);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+
+        panel.add(label);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(table);
+
+        return panel;
     }
 }
