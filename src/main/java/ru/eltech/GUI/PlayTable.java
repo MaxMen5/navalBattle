@@ -33,7 +33,7 @@ public class PlayTable extends JPanel {
 
         table.setRowSelectionAllowed(false);
         table.setCellSelectionEnabled(true);
-        table.setSelectionBackground(new Color(0, 0, 0, 0));  // Прозрачный цвет
+        table.setSelectionBackground(new Color(0, 0, 0, 0));
         table.setSelectionForeground(table.getForeground());
         table.setShowGrid(true);
         table.setGridColor(new Color(200, 200, 200));
@@ -42,7 +42,6 @@ public class PlayTable extends JPanel {
         FontRenderer renderer = new FontRenderer();
         table.setDefaultRenderer(Object.class, renderer);
 
-        setBorder(BorderFactory.createLineBorder(Color.BLACK, BORDER_THICKNESS));
 
         String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
 

@@ -2,6 +2,7 @@ package ru.eltech.GUI;
 
 
 import ru.eltech.GUI.renderers.ColorRenderer;
+import ru.eltech.entity.Desk;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,12 +10,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MainFrame extends JDialog {
 
     private PlayTable playerTable;
     private PlayTable computerTable;
-    private JTextPane logPane;
+    private LogPane logPane = new LogPane();
 
     public MainFrame() {
         setTitle("Морской бой");
@@ -45,7 +47,6 @@ public class MainFrame extends JDialog {
     private void createGUI() {
         playerTable = new PlayTable();
         computerTable = new PlayTable();
-        logPane = new JTextPane();
 
         JPanel playerPanel = createTablePanel("Ваше поле", playerTable);
         JPanel computerPanel = createTablePanel("Поле противника", computerTable);
@@ -53,17 +54,15 @@ public class MainFrame extends JDialog {
         int tablePanelWidth = playerTable.getPreferredSize().width;
         int tablePanelHeight = playerTable.getPreferredSize().height;
 
-        playerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 24));
-        computerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 24));
+        playerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 25));
+        computerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 25));
 
-        JTextPane logPane = new JTextPane();
-        logPane.setEditable(false);
         logPane.setPreferredSize(new Dimension(tablePanelWidth * 2, 100)); // Ширина двух таблиц
         JScrollPane logScrollPane = new JScrollPane(logPane);
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 50, 10, 50);
+        gbc.insets = new Insets(10, 120, 10, 120);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -80,27 +79,7 @@ public class MainFrame extends JDialog {
         gbc.weightx = 1.0;
         add(logScrollPane, gbc);
 
-        logPane.setText("Расставьте корабли на своем поле. Нужно расставить:\n1 четырехпалубник\n" +
-                "2 трехпалубника\n3 двухпалубника\n4 однопалубника\nПосле завершения нажмите кнопку \"#\" на своем поле.");
-
-        ColorRenderer renderer = new ColorRenderer();
-        playerTable.table.setDefaultRenderer(Object.class, renderer);
-
-
-        // Добавляем обработчик кликов
-        playerTable.table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int row = playerTable.table.rowAtPoint(e.getPoint());
-                int col = playerTable.table.columnAtPoint(e.getPoint());
-
-                if (row >= 1 && col >= 1) {
-
-                    renderer.toggleCellColor(row, col);
-                    playerTable.table.repaint();
-                }
-            }
-        });
+        shipLayout();
     }
 
     private JPanel createTablePanel(String title, JComponent table) {
@@ -110,12 +89,53 @@ public class MainFrame extends JDialog {
 
         JLabel label = new JLabel(title);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
+        label.setFont(new Font("Arial", Font.BOLD, 24));
 
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(table);
 
         return panel;
+    }
+
+    private void shipLayout() {
+        ColorRenderer renderer = new ColorRenderer();
+        playerTable.table.setDefaultRenderer(Object.class, renderer);
+        Desk playerDesk = new Desk();
+        Desk computerDesk = new Desk();
+        computerDesk.createAuto();
+
+        final ReentrantLock clickLock = new ReentrantLock();
+
+        playerTable.table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!clickLock.tryLock()) return; // Игнорируем новые клики во время обработки
+
+                try {
+                    Point p = e.getPoint();
+                    int row = playerTable.table.rowAtPoint(p);
+                    int col = playerTable.table.columnAtPoint(p);
+
+                    SwingUtilities.invokeLater(() -> {
+                        if (row >= 1 && col >= 1) {
+                            renderer.toggleCellColor(row, col);
+                            playerTable.table.repaint(row, row, col, col);
+                            playerDesk.changeMatrix(row, col);
+                        }
+                        if (row == 0 && col == 0) {
+                            if (playerDesk.checkMatrix()) startGame();
+                            else logPane.errorShipLayout();
+                        }
+                    });
+                } finally {
+                    clickLock.unlock();
+                }
+            }
+        });
+    }
+
+    private void startGame() {
+        logPane.setText("\nGOOD");
     }
 }
