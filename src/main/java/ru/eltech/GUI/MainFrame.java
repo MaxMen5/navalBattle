@@ -111,32 +111,31 @@ public class MainFrame extends JDialog {
         Desk computerDesk = new Desk();
         computerDesk.createAuto();
 
-        final ReentrantLock clickLock = new ReentrantLock();
-
         playerTable.table.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (!clickLock.tryLock()) return; // Игнорируем новые клики во время обработки
+            public void mousePressed(MouseEvent e) {
+                Point p = e.getPoint();
+                int row = playerTable.table.rowAtPoint(p);
+                int col = playerTable.table.columnAtPoint(p);
 
-                try {
-                    Point p = e.getPoint();
-                    int row = playerTable.table.rowAtPoint(p);
-                    int col = playerTable.table.columnAtPoint(p);
-
-                    SwingUtilities.invokeLater(() -> {
-                        if (row >= 1 && col >= 1) {
-                            playerRenderer.toggleCellColor(row, col);
-                            playerTable.table.repaint(row, row, col, col);
-                            playerDesk.changeMatrix(row, col);
-                            playerTable.table.getModel().setValueAt("Х", row, col);
+                if (row >= 1 && col >= 1) {
+                    if (playerTable.table.getModel().getValueAt(row, col) == null) {
+                        playerTable.table.getModel().setValueAt("Х", row, col);
+                    }
+                    else playerTable.table.getModel().setValueAt(null, row, col);
+                    playerDesk.changeMatrix(row, col);
+                }
+                if (row == 0 && col == 0) {
+                    boolean[][] matrix = new boolean[10][10];
+                    for (int i = 0; i < 10; i++) {
+                        for (int j = 0; j < 10; j++) {
+                            if (playerTable.table.getModel().getValueAt(i + 1, j + 1) == null) matrix[i][j] = false;
+                            else matrix[i][j] = true;
                         }
-                        if (row == 0 && col == 0) {
-                            if (playerDesk.checkMatrix()) startGame();
-                            else logPane.errorShipLayout();
-                        }
-                    });
-                } finally {
-                    clickLock.unlock();
+                    }
+                    playerDesk.playerLayout(matrix);
+                    if (playerDesk.checkMatrix()) startGame();
+                    else logPane.errorShipLayout();
                 }
             }
         });

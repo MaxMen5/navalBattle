@@ -20,6 +20,10 @@ public class Desk {
         }
     }
 
+    public void playerLayout(boolean[][] matrix) {
+        this.matrix = matrix;
+    }
+
     private void showMatrix() { // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
