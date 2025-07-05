@@ -1,7 +1,9 @@
 package ru.eltech.GUI;
 
 
-import ru.eltech.GUI.renderers.ColorRenderer;
+import ru.eltech.GUI.renderers.BlockedRenderer;
+import ru.eltech.GUI.renderers.ComputerRenderer;
+import ru.eltech.GUI.renderers.PlayerRenderer;
 import ru.eltech.entity.Desk;
 
 import javax.swing.*;
@@ -99,8 +101,12 @@ public class MainFrame extends JDialog {
     }
 
     private void shipLayout() {
-        ColorRenderer renderer = new ColorRenderer();
-        playerTable.table.setDefaultRenderer(Object.class, renderer);
+        PlayerRenderer playerRenderer = new PlayerRenderer();
+        ComputerRenderer computerRenderer = new ComputerRenderer();
+        BlockedRenderer blockedRenderer = new BlockedRenderer();
+        playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
+        computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
+
         Desk playerDesk = new Desk();
         Desk computerDesk = new Desk();
         computerDesk.createAuto();
@@ -119,9 +125,10 @@ public class MainFrame extends JDialog {
 
                     SwingUtilities.invokeLater(() -> {
                         if (row >= 1 && col >= 1) {
-                            renderer.toggleCellColor(row, col);
+                            playerRenderer.toggleCellColor(row, col);
                             playerTable.table.repaint(row, row, col, col);
                             playerDesk.changeMatrix(row, col);
+                            playerTable.table.getModel().setValueAt("Х", row, col);
                         }
                         if (row == 0 && col == 0) {
                             if (playerDesk.checkMatrix()) startGame();
