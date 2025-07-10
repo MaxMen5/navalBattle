@@ -4,6 +4,7 @@ package ru.eltech.GUI;
 import ru.eltech.GUI.renderers.BlockedRenderer;
 import ru.eltech.GUI.renderers.ComputerRenderer;
 import ru.eltech.GUI.renderers.PlayerRenderer;
+import ru.eltech.GUI.renderers.ShipRenderer;
 import ru.eltech.entity.Desk;
 
 import javax.swing.*;
@@ -12,13 +13,23 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class MainFrame extends JDialog {
 
     private PlayTable playerTable;
     private PlayTable computerTable;
-    private LogPane logPane = new LogPane();
+
+    private Desk playerDesk;
+    private Desk computerDesk;
+
+    private MouseAdapter playerTableMouseAdapter;
+    private MouseAdapter computerTableMouseAdapter;
+
+    private final LogPane logPane = new LogPane();
+    private final PlayerRenderer playerRenderer = new PlayerRenderer();
+    private final ComputerRenderer computerRenderer = new ComputerRenderer();
+    private final BlockedRenderer blockedRenderer = new BlockedRenderer();
+    private ShipRenderer shipRenderer;
 
     public MainFrame() {
         setTitle("Морской бой");
@@ -101,17 +112,15 @@ public class MainFrame extends JDialog {
     }
 
     private void shipLayout() {
-        PlayerRenderer playerRenderer = new PlayerRenderer();
-        ComputerRenderer computerRenderer = new ComputerRenderer();
-        BlockedRenderer blockedRenderer = new BlockedRenderer();
         playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
         computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
 
-        Desk playerDesk = new Desk();
-        Desk computerDesk = new Desk();
+        computerDesk = new Desk();
+        playerDesk = new Desk();
+
         computerDesk.createAuto();
 
-        playerTable.table.addMouseListener(new MouseAdapter() {
+        playerTableMouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
@@ -120,28 +129,68 @@ public class MainFrame extends JDialog {
 
                 if (row >= 1 && col >= 1) {
                     if (playerTable.table.getModel().getValueAt(row, col) == null) {
-                        playerTable.table.getModel().setValueAt("Х", row, col);
-                    }
-                    else playerTable.table.getModel().setValueAt(null, row, col);
+                        playerTable.table.getModel().setValueAt("X", row, col);
+                    } else playerTable.table.getModel().setValueAt(null, row, col);
                     playerDesk.changeMatrix(row, col);
                 }
                 if (row == 0 && col == 0) {
                     boolean[][] matrix = new boolean[10][10];
                     for (int i = 0; i < 10; i++) {
                         for (int j = 0; j < 10; j++) {
-                            if (playerTable.table.getModel().getValueAt(i + 1, j + 1) == null) matrix[i][j] = false;
+                            if (playerTable.table.getModel().getValueAt(i + 1, j + 1) == null)
+                                matrix[i][j] = false;
                             else matrix[i][j] = true;
                         }
                     }
                     playerDesk.playerLayout(matrix);
-                    if (playerDesk.checkMatrix()) startGame();
+                    if (playerDesk.checkMatrix()) {
+                        logPane.start();
+                        playerTable.table.removeMouseListener(playerTableMouseAdapter);
+                        shipRenderer = new ShipRenderer();
+                        playerTable.table.setDefaultRenderer(Object.class, shipRenderer);
+                        computerTable.table.setDefaultRenderer(Object.class, computerRenderer);
+                        startGame();
+                    }
                     else logPane.errorShipLayout();
                 }
             }
-        });
+        };
+
+        playerTable.table.addMouseListener(playerTableMouseAdapter);
     }
 
     private void startGame() {
-        logPane.setText("\nGOOD");
+
+        String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
+        int yourShip = 20;
+        int compShip = 20;
+
+        computerTableMouseAdapter = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point p = e.getPoint();
+                int row = playerTable.table.rowAtPoint(p);
+                int col = playerTable.table.columnAtPoint(p);
+
+                if (computerTable.table.getModel().getValueAt(row, col) == null) {
+                    int shot = computerDesk.shot(col, row);
+                    if (shot == 0) { // мимо
+                        computerTable.table.getModel().setValueAt('*', row, col);
+                        logPane.playerMiss(row, headers[col]);
+                    }
+                    if (shot == 1) { // ранение
+                        computerTable.table.getModel().setValueAt('X', row, col);
+                        logPane.playerHit(row, headers[col]);
+                    }
+                    if (shot == 2) { // потопление
+                        computerTable.table.getModel().setValueAt('X', row, col);
+                        logPane.playerSink(row, headers[col]);
+                        // TODO РАССТАВИТЬ *
+                    }
+                }
+            }
+        };
+
+        computerTable.table.addMouseListener(computerTableMouseAdapter);
     }
 }

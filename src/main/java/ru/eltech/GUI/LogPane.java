@@ -1,48 +1,90 @@
 package ru.eltech.GUI;
 
 import javax.swing.*;
+import javax.swing.text.*;
 import java.awt.*;
 
 public class LogPane extends JTextPane {
+
+    StyledDocument doc = getStyledDocument();
+
     public LogPane() {
         setFont(new Font("Arial", Font.BOLD, 24));
         setText("Расставьте корабли на своем поле. Нужно расставить: 1 четырехпалубник, " +
                 "2 трехпалубника, 3 двухпалубника, 4 однопалубника, После завершения нажмите кнопку \"#\" на своем поле.");
     }
 
+    public void appendColoredText(String text, Color color) {
+        try {
+            Style style = doc.addStyle("ColorStyle", null);
+            StyleConstants.setForeground(style, color);
+            doc.insertString(doc.getLength(), text, style);
+            setCaretPosition(doc.getLength());
+        } catch (BadLocationException e) {
+            System.err.println("Ошибка добавления текста: " + e.getMessage());
+        }
+    }
+
     public void errorShipLayout() {
-        setText(getText() + "\nКорабли расставлены неверно, попробуйте еще раз!");
+        appendColoredText("\nКорабли расставлены неверно, попробуйте еще раз!", Color.RED);
     }
 
-    public void playerMiss() {
-        setText(getText() + "\nВы промахнулись!");
+    public void start() {
+        appendColoredText("\nИгра началась! Вы ходите первым.", Color.BLACK);
     }
 
-    public void computerMiss() {
-        setText(getText() + "\nКомпьютер промахнулся!");
+    public void playerMiss(int x, String ch) {
+        appendColoredText("\nВаш ход", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Промах", Color.RED);
+        appendColoredText("!", Color.BLACK);
     }
 
-    public void playerHit() {
-        setText(getText() + "\nВы попали в корабль!");
+    public void computerMiss(int x, String ch) {
+        appendColoredText("\nХод компьютера", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Промах", Color.GREEN);
+        appendColoredText("!", Color.BLACK);
     }
 
-    public void computerHit() {
-        setText(getText() + "\nКомпьютер попал в корабль!");
+    public void playerHit(int x, String ch) {
+        appendColoredText("\nВаш ход", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Ранение", Color.GREEN);
+        appendColoredText("!", Color.BLACK);
     }
 
-    public void playerSink() {
-        setText(getText() + "\nВы потопили корабль!");
+    public void computerHit(int x, String ch) {
+        appendColoredText("\nХод компьютера", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Ранение", Color.RED);
+        appendColoredText("!", Color.BLACK);
     }
 
-    public void computerSink() {
-        setText(getText() + "\nКомпьютер потопил корабль!");
+    public void playerSink(int x, String ch) {
+        appendColoredText("\nВаш ход", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Потопление", Color.GREEN);
+        appendColoredText("!", Color.BLACK);
+
+    }
+
+    public void computerSink(int x, String ch) {
+        appendColoredText("\nХод компьютера", Color.GRAY);
+        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText("Потопление", Color.RED);
+        appendColoredText("!", Color.BLACK);
     }
 
     public void playerWin() {
-        setText(getText() + "\nВы победили!");
+        appendColoredText("\nВы ", Color.GRAY);
+        appendColoredText("победили", Color.GREEN);
+        appendColoredText("!", Color.BLACK);
     }
 
     public void computerWin() {
-        setText(getText() + "\nКомпьютер победил!");
+        appendColoredText("\nКомпьютер ", Color.GRAY);
+        appendColoredText("победил", Color.RED);
+        appendColoredText("!", Color.BLACK);
     }
 }

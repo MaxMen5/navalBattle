@@ -3,8 +3,6 @@ package ru.eltech.GUI.renderers;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
 
 import static ru.eltech.GUI.renderers.CommonRenderer.applyCommonStyles;
 

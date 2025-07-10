@@ -12,6 +12,8 @@ public class Desk {
     int[] normalArr = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
     Random rand = new Random();
 
+    ShipManager shipManager = new ShipManager();
+
     public Desk() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
@@ -39,7 +41,6 @@ public class Desk {
     }
 
     public boolean checkMatrix() {
-        showMatrix();
         int count = 0;
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
@@ -75,7 +76,7 @@ public class Desk {
                     list.add(ship);
                     ship = 0;
                 }
-                if (i == matrix[j].length - 1 && ship > 0) {
+                if (j == matrix[i].length - 1 && ship > 0) {
                     list.add(ship);
                     ship = 0;
                 }
@@ -83,10 +84,7 @@ public class Desk {
         }
         Collections.sort(list);
         int[] playerArr = new int[10];
-        for (int i = 20; i < list.size(); i++) {
-            playerArr[i-20] = list.get(i);
-            System.out.print(list.get(i) + " ");
-        }
+        for (int i = 20; i < list.size(); i++) playerArr[i-20] = list.get(i);
         return Arrays.equals(normalArr, playerArr);
     }
 
@@ -110,11 +108,13 @@ public class Desk {
                     if (z == 0) {
                         for (int i = x; i < x + length; i++) {
                             matrix[i][y] = true;
+                            shipManager.AddPoint(i, y, j);
                         }
                     }
                     if (z == 1) {
                         for (int i = y; i < y + length; i++) {
                             matrix[x][i] = true;
+                            shipManager.AddPoint(x, i, j);
                         }
                     }
                     break;
@@ -122,6 +122,7 @@ public class Desk {
             }
         }
         showMatrix();
+        shipManager.ShowPoints();
     }
 
     private boolean isFree(int x, int y, int z, int length) {
@@ -147,6 +148,15 @@ public class Desk {
             }
         }
         return true;
+    }
+
+    public int shot(int col, int row) {
+        if (!matrix[row-1][col-1]) return 0;
+        else {
+            int ship = shipManager.Shot(row - 1, col - 1);
+            if (shipManager.isSink(ship)) return 2;
+            else return 1;
+        }
     }
 }
 
