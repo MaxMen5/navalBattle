@@ -33,45 +33,49 @@ public class LogPane extends JTextPane {
         appendColoredText("\nИгра началась! Вы ходите первым.", Color.BLACK);
     }
 
-    public void playerMiss(int x, String ch) {
+    public void playerTurn() {
         appendColoredText("\nВаш ход", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(": ", Color.BLACK);
+    }
+
+    public void computerTurn() {
+        appendColoredText("\nХод компьютера", Color.GRAY);
+        appendColoredText(": ", Color.BLACK);
+    }
+
+    public void playerMiss(int x, String ch) {
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Промах", Color.RED);
         appendColoredText("!", Color.BLACK);
     }
 
     public void computerMiss(int x, String ch) {
-        appendColoredText("\nХод компьютера", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Промах", Color.GREEN);
         appendColoredText("!", Color.BLACK);
     }
 
     public void playerHit(int x, String ch) {
-        appendColoredText("\nВаш ход", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Ранение", Color.GREEN);
         appendColoredText("!", Color.BLACK);
     }
 
     public void computerHit(int x, String ch) {
-        appendColoredText("\nХод компьютера", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Ранение", Color.RED);
         appendColoredText("!", Color.BLACK);
     }
 
     public void playerSink(int x, String ch) {
-        appendColoredText("\nВаш ход", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Потопление", Color.GREEN);
         appendColoredText("!", Color.BLACK);
 
     }
 
     public void computerSink(int x, String ch) {
-        appendColoredText("\nХод компьютера", Color.GRAY);
-        appendColoredText(": " + ch + x + ". ", Color.BLACK);
+        appendColoredText(ch + x + ". ", Color.BLACK);
         appendColoredText("Потопление", Color.RED);
         appendColoredText("!", Color.BLACK);
     }

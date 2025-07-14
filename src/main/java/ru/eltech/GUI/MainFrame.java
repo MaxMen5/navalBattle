@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Random;
 
 public class MainFrame extends JDialog {
 
@@ -24,6 +25,13 @@ public class MainFrame extends JDialog {
 
     private MouseAdapter playerTableMouseAdapter;
     private MouseAdapter computerTableMouseAdapter;
+
+    private Timer timer;
+    private int yourShip = 20;
+    private int compShip = 20;
+    Random rand = new Random();
+    String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
+    private boolean isPlayerTurn = true;
 
     private final LogPane logPane = new LogPane();
     private final PlayerRenderer playerRenderer = new PlayerRenderer();
@@ -143,12 +151,21 @@ public class MainFrame extends JDialog {
                         }
                     }
                     playerDesk.playerLayout(matrix);
-                    if (playerDesk.checkMatrix()) {
+                    if (playerDesk.checkMatrix(playerTable)) {
                         logPane.start();
+                        logPane.playerTurn();
                         playerTable.table.removeMouseListener(playerTableMouseAdapter);
-                        shipRenderer = new ShipRenderer();
+                        shipRenderer = new ShipRenderer(playerDesk);
                         playerTable.table.setDefaultRenderer(Object.class, shipRenderer);
                         computerTable.table.setDefaultRenderer(Object.class, computerRenderer);
+
+                        for (int i = 1; i < 11; i++) {
+                            for (int j = 1; j < 11; j++) {
+                                if (playerTable.table.getModel().getValueAt(i, j) != null) {
+                                    playerTable.table.getModel().setValueAt(null, i, j);
+                                }
+                            }
+                        }
                         startGame();
                     }
                     else logPane.errorShipLayout();
@@ -160,11 +177,6 @@ public class MainFrame extends JDialog {
     }
 
     private void startGame() {
-
-        String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
-        int yourShip = 20;
-        int compShip = 20;
-
         computerTableMouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -172,25 +184,135 @@ public class MainFrame extends JDialog {
                 int row = playerTable.table.rowAtPoint(p);
                 int col = playerTable.table.columnAtPoint(p);
 
-                if (computerTable.table.getModel().getValueAt(row, col) == null) {
-                    int shot = computerDesk.shot(col, row);
-                    if (shot == 0) { // мимо
-                        computerTable.table.getModel().setValueAt('*', row, col);
-                        logPane.playerMiss(row, headers[col]);
+                if (isPlayerTurn) {
+                    if (computerTable.table.getModel().getValueAt(row, col) == null) {
+                        int shot = computerDesk.shot(col, row);
+                        if (shot == 0) { // мимо
+                            computerTable.table.getModel().setValueAt('*', row, col);
+                            logPane.playerMiss(row, headers[col]);
+                            isPlayerTurn = false;
+                            logPane.computerTurn();
+                        }
+                        if (shot == 1) { // ранение
+                            computerTable.table.getModel().setValueAt("X", row, col);
+                            logPane.playerHit(row, headers[col]);
+                            compShip--;
+                            logPane.playerTurn();
+                        }
+                        if (shot == 2) { // потопление
+                            computerTable.table.getModel().setValueAt("X", row, col);
+                            logPane.playerSink(row, headers[col]);
+                            stars(row, col, computerTable);
+                            compShip--;
+                            if (compShip == 0) playerWin();
+                            logPane.playerTurn();
+                        }
                     }
-                    if (shot == 1) { // ранение
-                        computerTable.table.getModel().setValueAt('X', row, col);
-                        logPane.playerHit(row, headers[col]);
-                    }
-                    if (shot == 2) { // потопление
-                        computerTable.table.getModel().setValueAt('X', row, col);
-                        logPane.playerSink(row, headers[col]);
-                        // TODO РАССТАВИТЬ *
+                }
+                if (!isPlayerTurn) {
+                    while (!isPlayerTurn) {
+                        //timer = new Timer(1000, ev -> {
+                        //    ((Timer) ev.getSource()).stop();
+                            computerMove();
+                        //});
+                        //timer.setRepeats(false);
+                        //timer.start();
                     }
                 }
             }
         };
-
         computerTable.table.addMouseListener(computerTableMouseAdapter);
+
     }
+
+    private void computerMove() {
+        int row, col;
+        while (true) {
+            row = rand.nextInt(10);
+            col = rand.nextInt(10);
+            row++;
+            col++;
+            if (playerTable.table.getModel().getValueAt(row, col) == null) break;
+        }
+
+        int shot = playerDesk.shot(col, row);
+        if (shot == 0) { // мимо
+            playerTable.table.getModel().setValueAt('*', row, col);
+            logPane.computerMiss(row, headers[col]);
+            isPlayerTurn = true;
+            logPane.playerTurn();
+        }
+        if (shot == 1) { // ранение
+            playerTable.table.getModel().setValueAt("X", row, col);
+            logPane.computerHit(row, headers[col]);
+            yourShip--;
+            logPane.computerTurn();
+        }
+        if (shot == 2) { // потопление
+            playerTable.table.getModel().setValueAt("X", row, col);
+            logPane.computerSink(row, headers[col]);
+            stars(row, col, playerTable);
+            yourShip--;
+            if (yourShip == 0) computerWin();
+            logPane.computerTurn();
+        }
+    }
+
+    private void stars(int row, int col, PlayTable table) {
+
+        if (col < 10 && row < 10 && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
+            table.table.getModel().setValueAt('*', row + 1, col + 1);
+        }
+        if (col < 10 && row > 1 && table.table.getModel().getValueAt(row - 1, col + 1) == null) {
+            table.table.getModel().setValueAt('*', row - 1, col + 1);
+        }
+        if (col > 1 && row < 10 && table.table.getModel().getValueAt(row + 1, col - 1) == null) {
+            table.table.getModel().setValueAt('*', row + 1, col - 1);
+        }
+        if (col > 1 && row > 1 && table.table.getModel().getValueAt(row - 1, col - 1) == null) {
+            table.table.getModel().setValueAt('*', row - 1, col - 1);
+        }
+        if (col < 10) {
+            if (table.table.getModel().getValueAt(row, col + 1) == null) {
+                table.table.getModel().setValueAt('*', row, col + 1);
+            }
+            if (table.table.getModel().getValueAt(row, col + 1) == "X") {
+                stars(row, col + 1, table);
+            }
+        }
+        if (col > 1) {
+            if (table.table.getModel().getValueAt(row, col - 1) == null) {
+                table.table.getModel().setValueAt('*', row, col - 1);
+            }
+            if (table.table.getModel().getValueAt(row, col - 1) == "X") {
+                stars(row, col - 1, table);
+            }
+        }
+        if (row < 10) {
+            if (table.table.getModel().getValueAt(row + 1, col) == null) {
+                table.table.getModel().setValueAt('*', row + 1, col);
+            }
+            if (table.table.getModel().getValueAt(row + 1, col) == "X") {
+                stars(row + 1, col, table);
+            }
+        }
+        if (row > 1) {
+            if (table.table.getModel().getValueAt(row - 1, col) == null) {
+                table.table.getModel().setValueAt('*', row - 1, col);
+            }
+            if (table.table.getModel().getValueAt(row - 1, col) == "X") {
+                stars(row - 1, col, table);
+            }
+        }
+    }
+
+
+    private void playerWin() {
+        //TODO
+    }
+
+    private void computerWin() {
+        //TODO
+    }
+
 }

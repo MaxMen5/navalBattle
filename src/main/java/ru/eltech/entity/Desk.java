@@ -1,5 +1,6 @@
 package ru.eltech.entity;
 
+import ru.eltech.GUI.PlayTable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,7 @@ public class Desk {
         else matrix[row-1][col-1] = true;
     }
 
-    public boolean checkMatrix() {
+    public boolean checkMatrix(PlayTable table) {
         int count = 0;
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
@@ -85,7 +86,49 @@ public class Desk {
         Collections.sort(list);
         int[] playerArr = new int[10];
         for (int i = 20; i < list.size(); i++) playerArr[i-20] = list.get(i);
-        return Arrays.equals(normalArr, playerArr);
+        if (Arrays.equals(normalArr, playerArr)) {
+            System.out.println("Ваше поле");
+            showMatrix();
+            setShipManager();
+            return true;
+        }
+        return false;
+    }
+
+    private void setShipManager() {
+        int ship = 0;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (matrix[i][j] && !isContain(shipManager.matrix, i, j)) {
+                    shipManager.AddPoint(i, j, ship);
+
+                    if (i < 9 && matrix[i+1][j]) {
+                        shipManager.AddPoint(i+1, j, ship);
+                        // вертикальное расположение
+                        for (int k = 2; k < 4; k++) {
+                            if (i < 10 - k && matrix[i+k][j]) shipManager.AddPoint(i+k, j, ship);
+                        }
+                    }
+                    else if (j < 9 && matrix[i][j+1]) {
+                        shipManager.AddPoint(i, j+1, ship);
+                        // горизонтальное расположение
+                        for (int k = 2; k < 4; k++) {
+                            if (j < 10 - k && matrix[i][j+k]) shipManager.AddPoint(i, j+k, ship);
+                        }
+                    }
+                    ship++;
+                }
+            }
+        }
+        shipManager.ShowPoints();
+    }
+
+    private boolean isContain(ShipManager.Ship[] array, int row, int col) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].ship == -1) return false;
+            else if (array[i].row == row && array[i].col == col) return true;
+        }
+        return false;
     }
 
     private boolean diagonal(int i, int j) {
@@ -121,8 +164,9 @@ public class Desk {
                 }
             }
         }
+        System.out.println("Поле противника");
         showMatrix();
-        shipManager.ShowPoints();
+
     }
 
     private boolean isFree(int x, int y, int z, int length) {

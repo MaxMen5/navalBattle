@@ -31,7 +31,6 @@ public class ShipManager {
             if (matrix[i].col == col && matrix[i].row == row) {
                 int ans = matrix[i].ship;
                 matrix[i].ship = -1;
-                ShowPoints();
                 return ans;
             }
         }
@@ -50,6 +49,7 @@ public class ShipManager {
         for (int i = 0; i < 20; i++) {
             System.out.println(matrix[i].col + " " + matrix[i].row + " " + matrix[i].ship);
         }
+        System.out.println();
     }
 
 }
