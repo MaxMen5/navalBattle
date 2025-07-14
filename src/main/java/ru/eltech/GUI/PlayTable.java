@@ -3,21 +3,20 @@ package ru.eltech.GUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 
 public class PlayTable extends JPanel {
     public JTable table;
-    private DefaultTableModel model;
     private static final int CELL_SIZE = 45;
     private static final int BORDER_THICKNESS = 4;
 
     public PlayTable() {
         setLayout(new BorderLayout());
 
-        model = new DefaultTableModel(11, 11) {
+        DefaultTableModel model = new DefaultTableModel(11, 11) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
         table = new JTable(model);

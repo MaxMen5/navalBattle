@@ -20,15 +20,11 @@ public class MainFrame extends JDialog {
     private PlayTable playerTable;
     private PlayTable computerTable;
 
-    private JPanel computerPanel;
-
     private Desk playerDesk;
     private Desk computerDesk;
 
     private MouseAdapter playerTableMouseAdapter;
-    private MouseAdapter computerTableMouseAdapter;
 
-    private Timer timer;
     private int yourShip = 20;
     private int compShip = 20;
     Random rand = new Random();
@@ -73,7 +69,7 @@ public class MainFrame extends JDialog {
         computerTable = new PlayTable();
 
         JPanel playerPanel = createTablePanel("Ваше поле", playerTable);
-        computerPanel = createTablePanel("Поле противника", computerTable);
+        JPanel computerPanel = createTablePanel("Поле противника", computerTable);
 
         int tablePanelWidth = playerTable.getPreferredSize().width;
         int tablePanelHeight = playerTable.getPreferredSize().height;
@@ -148,9 +144,7 @@ public class MainFrame extends JDialog {
                     boolean[][] matrix = new boolean[10][10];
                     for (int i = 0; i < 10; i++) {
                         for (int j = 0; j < 10; j++) {
-                            if (playerTable.table.getModel().getValueAt(i + 1, j + 1) == null)
-                                matrix[i][j] = false;
-                            else matrix[i][j] = true;
+                            matrix[i][j] = playerTable.table.getModel().getValueAt(i + 1, j + 1) != null;
                         }
                     }
                     playerDesk.playerLayout(matrix);
@@ -180,7 +174,7 @@ public class MainFrame extends JDialog {
     }
 
     private void startGame() {
-        computerTableMouseAdapter = new MouseAdapter() {
+        MouseAdapter computerTableMouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
@@ -223,20 +217,18 @@ public class MainFrame extends JDialog {
             }
         };
         computerTable.table.addMouseListener(computerTableMouseAdapter);
-
     }
 
     private void computerMove() {
-        timer = new Timer(1000, ev -> {
+        Timer timer = new Timer(1000, ev -> {
             ((Timer) ev.getSource()).stop();
             int row, col;
-            while (true) {
+            do {
                 row = rand.nextInt(10);
                 col = rand.nextInt(10);
                 row++;
                 col++;
-                if (playerTable.table.getModel().getValueAt(row, col) == null) break;
-            }
+            } while (playerTable.table.getModel().getValueAt(row, col) != null);
 
             int shot = playerDesk.shot(col, row);
             if (shot == 0) { // мимо
@@ -258,7 +250,7 @@ public class MainFrame extends JDialog {
                 stars(row, col, playerTable);
                 yourShip--;
                 if (yourShip == 0) {
-                    logPane.playerWin();
+                    logPane.computerWin();
                     endGame();
                 }
                 logPane.computerTurn();
