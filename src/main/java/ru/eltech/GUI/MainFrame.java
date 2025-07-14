@@ -220,6 +220,7 @@ public class MainFrame extends JDialog {
     }
 
     private void computerMove() {
+        //
         Timer timer = new Timer(1000, ev -> {
             ((Timer) ev.getSource()).stop();
             int row, col;
