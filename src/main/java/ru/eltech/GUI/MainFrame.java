@@ -20,6 +20,8 @@ public class MainFrame extends JDialog {
     private PlayTable playerTable;
     private PlayTable computerTable;
 
+    private JPanel computerPanel;
+
     private Desk playerDesk;
     private Desk computerDesk;
 
@@ -32,6 +34,7 @@ public class MainFrame extends JDialog {
     Random rand = new Random();
     String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
     private boolean isPlayerTurn = true;
+    private boolean computerProcess = false;
 
     private final LogPane logPane = new LogPane();
     private final PlayerRenderer playerRenderer = new PlayerRenderer();
@@ -70,7 +73,7 @@ public class MainFrame extends JDialog {
         computerTable = new PlayTable();
 
         JPanel playerPanel = createTablePanel("Ваше поле", playerTable);
-        JPanel computerPanel = createTablePanel("Поле противника", computerTable);
+        computerPanel = createTablePanel("Поле противника", computerTable);
 
         int tablePanelWidth = playerTable.getPreferredSize().width;
         int tablePanelHeight = playerTable.getPreferredSize().height;
@@ -185,6 +188,7 @@ public class MainFrame extends JDialog {
                 int col = playerTable.table.columnAtPoint(p);
 
                 if (isPlayerTurn) {
+                    computerProcess = false;
                     if (computerTable.table.getModel().getValueAt(row, col) == null) {
                         int shot = computerDesk.shot(col, row);
                         if (shot == 0) { // мимо
@@ -204,20 +208,17 @@ public class MainFrame extends JDialog {
                             logPane.playerSink(row, headers[col]);
                             stars(row, col, computerTable);
                             compShip--;
-                            if (compShip == 0) playerWin();
+                            if (compShip == 0) {
+                                logPane.playerWin();
+                                endGame();
+                            }
                             logPane.playerTurn();
                         }
                     }
                 }
-                if (!isPlayerTurn) {
-                    while (!isPlayerTurn) {
-                        //timer = new Timer(1000, ev -> {
-                        //    ((Timer) ev.getSource()).stop();
-                            computerMove();
-                        //});
-                        //timer.setRepeats(false);
-                        //timer.start();
-                    }
+                if (!isPlayerTurn && !computerProcess) {
+                    computerProcess = true;
+                    computerMove();
                 }
             }
         };
@@ -226,40 +227,50 @@ public class MainFrame extends JDialog {
     }
 
     private void computerMove() {
-        int row, col;
-        while (true) {
-            row = rand.nextInt(10);
-            col = rand.nextInt(10);
-            row++;
-            col++;
-            if (playerTable.table.getModel().getValueAt(row, col) == null) break;
-        }
+        timer = new Timer(1000, ev -> {
+            ((Timer) ev.getSource()).stop();
+            int row, col;
+            while (true) {
+                row = rand.nextInt(10);
+                col = rand.nextInt(10);
+                row++;
+                col++;
+                if (playerTable.table.getModel().getValueAt(row, col) == null) break;
+            }
 
-        int shot = playerDesk.shot(col, row);
-        if (shot == 0) { // мимо
-            playerTable.table.getModel().setValueAt('*', row, col);
-            logPane.computerMiss(row, headers[col]);
-            isPlayerTurn = true;
-            logPane.playerTurn();
-        }
-        if (shot == 1) { // ранение
-            playerTable.table.getModel().setValueAt("X", row, col);
-            logPane.computerHit(row, headers[col]);
-            yourShip--;
-            logPane.computerTurn();
-        }
-        if (shot == 2) { // потопление
-            playerTable.table.getModel().setValueAt("X", row, col);
-            logPane.computerSink(row, headers[col]);
-            stars(row, col, playerTable);
-            yourShip--;
-            if (yourShip == 0) computerWin();
-            logPane.computerTurn();
-        }
+            int shot = playerDesk.shot(col, row);
+            if (shot == 0) { // мимо
+                playerTable.table.getModel().setValueAt('*', row, col);
+                logPane.computerMiss(row, headers[col]);
+                isPlayerTurn = true;
+                logPane.playerTurn();
+            }
+            if (shot == 1) { // ранение
+                playerTable.table.getModel().setValueAt("X", row, col);
+                logPane.computerHit(row, headers[col]);
+                yourShip--;
+                logPane.computerTurn();
+                computerMove();
+            }
+            if (shot == 2) { // потопление
+                playerTable.table.getModel().setValueAt("X", row, col);
+                logPane.computerSink(row, headers[col]);
+                stars(row, col, playerTable);
+                yourShip--;
+                if (yourShip == 0) {
+                    logPane.playerWin();
+                    endGame();
+                }
+                logPane.computerTurn();
+                computerMove();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 
     private void stars(int row, int col, PlayTable table) {
-
+        table.table.getModel().setValueAt("Х", row, col); // русская Х стоит, чтобы избежать лишней рекурсии
         if (col < 10 && row < 10 && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
             table.table.getModel().setValueAt('*', row + 1, col + 1);
         }
@@ -306,13 +317,13 @@ public class MainFrame extends JDialog {
         }
     }
 
-
-    private void playerWin() {
-        //TODO
-    }
-
-    private void computerWin() {
-        //TODO
+    private void endGame() {
+        JOptionPane.showConfirmDialog(
+                MainFrame.this,
+                "Конец игры!",
+                "Поздравляем",
+                JOptionPane.DEFAULT_OPTION);
+        dispose();
     }
 
 }
