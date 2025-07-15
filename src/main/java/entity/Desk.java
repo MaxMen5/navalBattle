@@ -1,6 +1,6 @@
-package ru.eltech.entity;
+package entity;
 
-import ru.eltech.GUI.PlayTable;
+import GUI.PlayTable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

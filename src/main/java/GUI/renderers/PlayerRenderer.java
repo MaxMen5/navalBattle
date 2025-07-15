@@ -1,10 +1,8 @@
-package ru.eltech.GUI.renderers;
+package GUI.renderers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-
-import static ru.eltech.GUI.renderers.CommonRenderer.applyCommonStyles;
 
 public class PlayerRenderer extends DefaultTableCellRenderer {
 
@@ -15,7 +13,7 @@ public class PlayerRenderer extends DefaultTableCellRenderer {
 
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        applyCommonStyles(table, this, row, column);
+        CommonRenderer.applyCommonStyles(table, this, row, column);
 
         if (isSelected && ((row > 0 && column > 0) || (row == 0 && column == 0))) {
             setBackground(table.getSelectionBackground());

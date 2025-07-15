@@ -1,4 +1,4 @@
-package ru.eltech.entity;
+package entity;
 
 public class ShipManager {
 

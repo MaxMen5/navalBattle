@@ -1,4 +1,4 @@
-package ru.eltech.GUI;
+package GUI;
 
 import javax.swing.*;
 import javax.swing.text.*;

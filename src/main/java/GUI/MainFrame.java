@@ -1,11 +1,11 @@
-package ru.eltech.GUI;
+package GUI;
 
 
-import ru.eltech.GUI.renderers.BlockedRenderer;
-import ru.eltech.GUI.renderers.ComputerRenderer;
-import ru.eltech.GUI.renderers.PlayerRenderer;
-import ru.eltech.GUI.renderers.ShipRenderer;
-import ru.eltech.entity.Desk;
+import GUI.renderers.ComputerRenderer;
+import GUI.renderers.PlayerRenderer;
+import GUI.renderers.ShipRenderer;
+import GUI.renderers.BlockedRenderer;
+import entity.Desk;
 
 import javax.swing.*;
 import java.awt.*;

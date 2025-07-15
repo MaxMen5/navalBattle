@@ -1,4 +1,4 @@
-package ru.eltech.GUI.renderers;
+package GUI.renderers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
