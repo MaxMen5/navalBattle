@@ -239,6 +239,8 @@ public class MainFrame extends JDialog {
                     int[] point = alterMove();
                     row = point[0];
                     col = point[1];
+                    row++;
+                    col++;
                 } while (playerTable.table.getModel().getValueAt(row, col) != null);
             }
             int shot = playerDesk.shot(col, row);
@@ -250,7 +252,7 @@ public class MainFrame extends JDialog {
             }
             if (shot == 1) { // ранение
                 alterComputerMove = true;
-                addPoints(col, row);
+                addPoints(col - 1, row - 1);
                 playerTable.table.getModel().setValueAt("X", row, col);
                 logPane.computerHit(row, headers[col]);
                 yourShip--;

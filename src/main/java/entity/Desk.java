@@ -96,6 +96,7 @@ public class Desk {
                         // вертикальное расположение
                         for (int k = 2; k < 4; k++) {
                             if (i < 10 - k && matrix[i+k][j]) shipManager.AddPoint(i+k, j, ship);
+                            else break;
                         }
                     }
                     else if (j < 9 && matrix[i][j+1]) {
@@ -103,6 +104,7 @@ public class Desk {
                         // горизонтальное расположение
                         for (int k = 2; k < 4; k++) {
                             if (j < 10 - k && matrix[i][j+k]) shipManager.AddPoint(i, j+k, ship);
+                            else break;
                         }
                     }
                     ship++;
