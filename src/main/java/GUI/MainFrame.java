@@ -19,7 +19,6 @@ public class MainFrame extends JDialog {
 
     private PlayTable playerTable;
     private PlayTable computerTable;
-
     private Desk playerDesk;
     private Desk computerDesk;
 
@@ -29,8 +28,11 @@ public class MainFrame extends JDialog {
     private int compShip = 20;
     Random rand = new Random();
     String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
+    private final int[][] points = {{-1, -1}, {-1, -1}, {-1, -1}};
+
     private boolean isPlayerTurn = true;
     private boolean computerProcess = false;
+    private boolean alterComputerMove = false;
 
     private final LogPane logPane = new LogPane();
     private final PlayerRenderer playerRenderer = new PlayerRenderer();
@@ -224,13 +226,21 @@ public class MainFrame extends JDialog {
         Timer timer = new Timer(1000, ev -> {
             ((Timer) ev.getSource()).stop();
             int row, col;
-            do {
-                row = rand.nextInt(10);
-                col = rand.nextInt(10);
-                row++;
-                col++;
-            } while (playerTable.table.getModel().getValueAt(row, col) != null);
-
+            if (!alterComputerMove) {
+                do {
+                    row = rand.nextInt(10);
+                    col = rand.nextInt(10);
+                    row++;
+                    col++;
+                } while (playerTable.table.getModel().getValueAt(row, col) != null);
+            }
+            else {
+                do {
+                    int[] point = alterMove();
+                    row = point[0];
+                    col = point[1];
+                } while (playerTable.table.getModel().getValueAt(row, col) != null);
+            }
             int shot = playerDesk.shot(col, row);
             if (shot == 0) { // мимо
                 playerTable.table.getModel().setValueAt('*', row, col);
@@ -239,6 +249,8 @@ public class MainFrame extends JDialog {
                 logPane.playerTurn();
             }
             if (shot == 1) { // ранение
+                alterComputerMove = true;
+                addPoints(col, row);
                 playerTable.table.getModel().setValueAt("X", row, col);
                 logPane.computerHit(row, headers[col]);
                 yourShip--;
@@ -246,6 +258,8 @@ public class MainFrame extends JDialog {
                 computerMove();
             }
             if (shot == 2) { // потопление
+                alterComputerMove = false;
+                cleanPoints();
                 playerTable.table.getModel().setValueAt("X", row, col);
                 logPane.computerSink(row, headers[col]);
                 stars(row, col, playerTable);
@@ -260,6 +274,106 @@ public class MainFrame extends JDialog {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+
+    private int[] alterMove() {
+        int[] point = {-1, -1};
+        if (points[1][0] == -1) { // Если ранение только одно
+            int row = points[0][0];
+            int col = points[0][1];
+            while (true) {
+                int shot = rand.nextInt(4);
+                if (shot == 0 && row > 0) { // верх
+                    point[0] = row - 1;
+                    point[1] = col;
+                    break;
+                }
+                else if (shot == 1 && col < 9) { // право
+                    point[0] = row;
+                    point[1] = col + 1;
+                    break;
+                }
+                else if (shot == 2 && row < 9) { // низ
+                    point[0] = row + 1;
+                    point[1] = col;
+                    break;
+                }
+                else if (shot == 3 && col > 0) { // лево
+                    point[0] = row;
+                    point[1] = col - 1;
+                    break;
+                }
+            }
+        }
+        else { // Если ранений несколько
+            if (points[0][0] == points[1][0]) { // горизонтальное расположение
+                int row = points[0][0];
+                int left = points[0][1];
+                int right = points[0][1];
+                if (points[1][1] > right) right = points[1][1];
+                else left = points[1][1];
+
+                if (points[2][1] != -1) {
+                    if (points[2][1] > right) right = points[2][1];
+                    if (points[2][1] < left) left = points[2][1];
+                }
+                while (true) {
+                    int shot = rand.nextInt(2);
+                    point[0] = row;
+                    if (shot == 0 && right < 9) { // бьем правее
+                        point[1] = right + 1;
+                        break;
+                    }
+                    if (shot == 1 && left > 0) { // бьем левее
+                        point[1] = left - 1;
+                        break;
+                    }
+                }
+
+            }
+            else { // вертикальное расположение
+                int col = points[0][1];
+                int up = points[0][0];
+                int down = points[0][0];
+                if (points[1][0] > down) down = points[1][0];
+                else up = points[1][0];
+
+                if (points[2][0] != -1) {
+                    if (points[2][0] > down) down = points[2][0];
+                    if (points[2][0] < up) up = points[2][0];
+                }
+                while (true) {
+                    int shot = rand.nextInt(2);
+                    point[1] = col;
+                    if (shot == 0 && down < 9) { // бьем ниже
+                        point[0] = down + 1;
+                        break;
+                    }
+                    if (shot == 1 && up > 0) { // бьем выше
+                        point[0] = up - 1;
+                        break;
+                    }
+                }
+            }
+        }
+        return point;
+    }
+
+    public void cleanPoints() {
+        for (int i = 0; i < 3; i++) {
+            points[i][0] = -1;
+            points[i][1] = -1;
+        }
+    }
+
+    public void addPoints(int col, int row) {
+        for (int i = 0; i < 3; i++) {
+            if (points[i][0] == -1) {
+                points[i][0] = row;
+                points[i][1] = col;
+                break;
+            }
+        }
     }
 
     private void stars(int row, int col, PlayTable table) {

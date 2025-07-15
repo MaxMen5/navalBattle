@@ -27,15 +27,6 @@ public class Desk {
         this.matrix = matrix;
     }
 
-    private void showMatrix() { // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                if (matrix[i][j]) {System.out.print(1 + "  ");}
-                else {System.out.print(0 + "  ");}
-            } System.out.println();
-        } System.out.println();
-    }
-
     public void changeMatrix(int row, int col) {
         if (matrix[row-1][col-1]) matrix[row-1][col-1] = false;
         else matrix[row-1][col-1] = true;
@@ -87,8 +78,6 @@ public class Desk {
         int[] playerArr = new int[10];
         for (int i = 20; i < list.size(); i++) playerArr[i-20] = list.get(i);
         if (Arrays.equals(normalArr, playerArr)) {
-            System.out.println("Ваше поле");
-            showMatrix();
             setShipManager();
             return true;
         }
@@ -120,7 +109,6 @@ public class Desk {
                 }
             }
         }
-        shipManager.ShowPoints();
     }
 
     private boolean isContain(ShipManager.Ship[] array, int row, int col) {
@@ -164,9 +152,6 @@ public class Desk {
                 }
             }
         }
-        System.out.println("Поле противника");
-        showMatrix();
-
     }
 
     private boolean isFree(int x, int y, int z, int length) {
