@@ -4,13 +4,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
-import static GUI.MainFrame.size;
-
 public class CommonRenderer {
     public static void applyCommonStyles(JTable table, DefaultTableCellRenderer renderer, int row, int column) {
 
         renderer.setFont(new Font("Arial", Font.BOLD, 24));
         renderer.setHorizontalAlignment(JLabel.CENTER);
+        int size = table.getRowCount() - 1;
 
         if (column == size) {
             renderer.setBorder(BorderFactory.createCompoundBorder(

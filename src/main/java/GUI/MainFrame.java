@@ -18,12 +18,12 @@ import static utils.ComputerMoves.*;
 
 public class MainFrame extends JDialog {
 
-    public static int size;
+    public int size;
 
     private PlayTable playerTable;
     private PlayTable computerTable;
-    private final Desk playerDesk = new Desk();
-    private final Desk computerDesk = new Desk();
+    private Desk playerDesk;
+    private Desk computerDesk;
 
     private MouseAdapter playerTableMouseAdapter;
 
@@ -68,55 +68,91 @@ public class MainFrame extends JDialog {
     }
 
     private void createGUI() {
-        playerTable = new PlayTable();
-        computerTable = new PlayTable();
+        // Получаем цвет фона основного окна
+        Color bgColor = getBackground();
 
-        JPanel playerPanel = createTablePanel("Ваше поле", playerTable);
-        JPanel computerPanel = createTablePanel("Поле противника", computerTable);
+        playerTable = new PlayTable(size);
+        computerTable = new PlayTable(size);
 
-        int tablePanelWidth = playerTable.getPreferredSize().width;
-        int tablePanelHeight = playerTable.getPreferredSize().height;
+        // Создаем панели таблиц с заголовками
+        JPanel playerPanel = createTablePanel("Ваше поле", playerTable, bgColor);
+        JPanel computerPanel = createTablePanel("Поле противника", computerTable, bgColor);
 
-        playerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 25));
-        computerPanel.setPreferredSize(new Dimension(tablePanelWidth, tablePanelHeight + 25));
-
-        logPane.setPreferredSize(new Dimension(tablePanelWidth * 2, 100)); // Ширина двух таблиц
+        // Настраиваем панель логов
+        logPane.setPreferredSize(new Dimension(0, 100));
+        logPane.setMinimumSize(new Dimension(0, 50));
+        logPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         JScrollPane logScrollPane = new JScrollPane(logPane);
+        logScrollPane.setBackground(bgColor);
 
+        // Создаем контейнер для панели логов с ограниченной шириной
+        JPanel logContainer = new JPanel(new BorderLayout());
+        logContainer.setBackground(bgColor);
+        logContainer.add(logScrollPane, BorderLayout.CENTER);
+        int tablesWidth = playerTable.getPreferredSize().width * 2 + 30; // Ширина двух таблиц + отступ
+        logContainer.setPreferredSize(new Dimension(tablesWidth, 100));
+        logContainer.setMaximumSize(new Dimension(tablesWidth, 150));
+
+        // Основной контейнер с GridBagLayout
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 120, 10, 120);
+        gbc.insets = new Insets(15, 15, 15, 15);
+
+        // 1. Верхняя панель с таблицами
+        JPanel tablesPanel = new JPanel(new BorderLayout());
+        tablesPanel.setBackground(bgColor);
+
+        JPanel tablesContainer = new JPanel(new GridLayout(1, 2, 30, 0));
+        tablesContainer.setBackground(bgColor);
+        tablesContainer.add(computerPanel);
+        tablesContainer.add(playerPanel);
+
+        tablesPanel.add(tablesContainer, BorderLayout.CENTER);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        add(computerPanel, gbc);
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.9;
+        gbc.fill = GridBagConstraints.BOTH;
+        add(tablesPanel, gbc);
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        add(playerPanel, gbc);
+        // 2. Панель логов (теперь в центрирующем контейнере)
+        JPanel logWrapper = new JPanel(new GridBagLayout());
+        logWrapper.setBackground(bgColor);
+        logWrapper.add(logContainer);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
         gbc.weightx = 1.0;
-        add(logScrollPane, gbc);
+        gbc.weighty = 0.1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(logWrapper, gbc);
 
         shipLayout();
     }
 
-    private JPanel createTablePanel(String title, JComponent table) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    private JPanel createTablePanel(String title, JComponent table, Color bgColor) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(bgColor);
 
-        JLabel label = new JLabel(title);
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        label.setFont(new Font("Arial", Font.BOLD, 24));
+        // Заголовок с отступом
+        JLabel label = new JLabel(title, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.BOLD, 20));
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        label.setBackground(bgColor);
+        label.setOpaque(true);
+        panel.add(label, BorderLayout.NORTH);
 
-        panel.add(label);
-        panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        panel.add(table);
+        // Таблица в центрирующей панели
+        JPanel tableContainer = new JPanel(new GridBagLayout());
+        tableContainer.setBackground(bgColor);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(bgColor);
+
+        tableContainer.add(scrollPane);
+        panel.add(tableContainer, BorderLayout.CENTER);
 
         return panel;
     }
@@ -124,6 +160,10 @@ public class MainFrame extends JDialog {
     private void shipLayout() {
         playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
         computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
+
+        playerDesk = new Desk(size);
+        computerDesk = new Desk(size);
+
         computerDesk.createAuto();
 
         playerTableMouseAdapter = new MouseAdapter() {

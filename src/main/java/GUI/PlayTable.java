@@ -4,19 +4,13 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-import static GUI.MainFrame.size;
-
 public class PlayTable extends JPanel {
     public JTable table;
-    private static final int TABLE_SIZE = ++size;
-    private static final int CELL_SIZE = 45;
-    private static final int BORDER_THICKNESS = 4;
-    public static String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
-
-    public PlayTable() {
+    public static String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К", "Л", "М", "Н", "О", "П"};
+    public PlayTable(int size) {
         setLayout(new BorderLayout());
 
-        DefaultTableModel model = new DefaultTableModel(TABLE_SIZE, TABLE_SIZE) {
+        DefaultTableModel model = new DefaultTableModel(size + 1, size + 1) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -25,13 +19,11 @@ public class PlayTable extends JPanel {
 
         table = new JTable(model);
         table.setTableHeader(null);
-        table.setRowHeight(CELL_SIZE);
+
+
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         add(table, BorderLayout.CENTER);
-
-        int totalSize = TABLE_SIZE * CELL_SIZE + 2 * BORDER_THICKNESS;
-        setPreferredSize(new Dimension(totalSize, totalSize));
 
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setRowSelectionAllowed(false);
@@ -43,6 +35,20 @@ public class PlayTable extends JPanel {
             model.setValueAt(i, i, 0);
             model.setValueAt(headers[i], 0, i);
         }
+        fixTableSizes();
 
+    }
+
+    private void fixTableSizes() {
+        int cellSize = 45;
+        table.setRowHeight(cellSize);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setMinWidth(cellSize);
+            table.getColumnModel().getColumn(i).setPreferredWidth(cellSize);
+            table.getColumnModel().getColumn(i).setMaxWidth(cellSize);
+        }
+        table.setPreferredScrollableViewportSize(
+                new Dimension(table.getColumnCount() * cellSize,
+                        table.getRowCount() * cellSize));
     }
 }

@@ -17,29 +17,38 @@ public class Menu extends JFrame {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JButton classic = new JButton("Классическая игра");
-        JButton button = new JButton("В разработке...");
+        JButton mod = new JButton("В разработке...");
 
         classic.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mod.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         mainPanel.add(Box.createVerticalGlue());
         mainPanel.add(classic);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15))); // Фиксированный отступ
-        mainPanel.add(button);
+        mainPanel.add(mod);
         mainPanel.add(Box.createVerticalGlue());
 
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
-        JTextField size = new JTextField("10");
-        add(size, BorderLayout.NORTH);
+        JTextField sizeL = new JTextField("12");
+        add(sizeL, BorderLayout.NORTH);
 
         setVisible(true);
 
         classic.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                 new MainFrame(Integer.parseInt(size.getText()));
+                new MainFrame(10);
+            }
+        });
+
+        mod.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new MainFrame(Integer.parseInt(sizeL.getText()));
+                // max 13
+                // min 8? or 5
             }
         });
     }

@@ -2,22 +2,18 @@ package entity;
 
 import java.util.Random;
 
-import static GUI.MainFrame.size;
-
 public class Desk {
 
-    public boolean[][] matrix = new boolean[size][size];
+    public boolean[][] matrix;
     int[] normalArr = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
+    int size;
 
     Random rand = new Random();
     ShipManager shipManager = new ShipManager();
 
-    public Desk() {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                matrix[i][j] = false;
-            }
-        }
+    public Desk(int size) {
+        this.size = size;
+        this.matrix = new boolean[size][size];
     }
 
     public void playerLayout(boolean[][] matrix) {
@@ -202,7 +198,7 @@ public class Desk {
         if (dx > size - 1) dx = size - 1;
         for (int i = ax; i <= dx; i++) {
             for (int j = ay; j <= by; j++) {
-                if (matrix[i][j]) {
+                if (matrix[i][j]) { // какая то странная ошибка иногда
                     return false;
                 }
             }
