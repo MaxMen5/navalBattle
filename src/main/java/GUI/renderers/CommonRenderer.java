@@ -4,25 +4,27 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
+import static GUI.MainFrame.size;
+
 public class CommonRenderer {
     public static void applyCommonStyles(JTable table, DefaultTableCellRenderer renderer, int row, int column) {
 
         renderer.setFont(new Font("Arial", Font.BOLD, 24));
         renderer.setHorizontalAlignment(JLabel.CENTER);
 
-        if (column == 10) {
+        if (column == size) {
             renderer.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 0, 4, Color.BLACK),
                     BorderFactory.createEmptyBorder(0, 0, 0, 0) // Внутренние отступы
             ));
         }
-        if (row == 10) {
+        if (row == size) {
             renderer.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 4, 0, Color.BLACK),
                     BorderFactory.createEmptyBorder(0, 0, 0, 0) // Внутренние отступы
             ));
         }
-        if (row == 10 && column == 10) {
+        if (row == size && column == size) {
             renderer.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 4, 4, Color.BLACK),
                     BorderFactory.createEmptyBorder(0, 5, 0, 5) // Внутренние отступы
@@ -46,13 +48,13 @@ public class CommonRenderer {
                     BorderFactory.createEmptyBorder(0, 5, 0, 5) // Внутренние отступы
             ));
         }
-        if (row == 0 && column == 10) {
+        if (row == 0 && column == size) {
             renderer.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(4, 0, 4, 4, Color.BLACK),
                     BorderFactory.createEmptyBorder(0, 5, 0, 5) // Внутренние отступы
             ));
         }
-        if (row == 10 && column == 0) {
+        if (row == size && column == 0) {
             renderer.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 4, 4, 4, Color.BLACK),
                     BorderFactory.createEmptyBorder(0, 5, 0, 5) // Внутренние отступы

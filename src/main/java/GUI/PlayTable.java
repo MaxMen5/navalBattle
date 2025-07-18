@@ -4,9 +4,11 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
+import static GUI.MainFrame.size;
+
 public class PlayTable extends JPanel {
     public JTable table;
-    private static final int TABLE_SIZE = 11;
+    private static final int TABLE_SIZE = ++size;
     private static final int CELL_SIZE = 45;
     private static final int BORDER_THICKNESS = 4;
     public static String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};

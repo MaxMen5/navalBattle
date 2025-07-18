@@ -28,13 +28,18 @@ public class Menu extends JFrame {
         mainPanel.add(button);
         mainPanel.add(Box.createVerticalGlue());
 
-        add(mainPanel);
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
+
+        JTextField size = new JTextField("10");
+        add(size, BorderLayout.NORTH);
+
         setVisible(true);
 
         classic.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                new MainFrame();
+                 new MainFrame(Integer.parseInt(size.getText()));
             }
         });
     }

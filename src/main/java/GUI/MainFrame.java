@@ -18,6 +18,8 @@ import static utils.ComputerMoves.*;
 
 public class MainFrame extends JDialog {
 
+    public static int size;
+
     private PlayTable playerTable;
     private PlayTable computerTable;
     private final Desk playerDesk = new Desk();
@@ -38,7 +40,8 @@ public class MainFrame extends JDialog {
     private final ShipAndBlockRenderer blockedRenderer = new ShipAndBlockRenderer();
     private ShipAndBlockRenderer shipRenderer;
 
-    public MainFrame() {
+    public MainFrame(int size) {
+        this.size = size;
         setTitle("Морской бой");
         createGUI();
 
@@ -137,9 +140,9 @@ public class MainFrame extends JDialog {
                     playerDesk.changeMatrix(row, col);
                 }
                 if (row == 0 && col == 0) {
-                    boolean[][] matrix = new boolean[10][10];
-                    for (int i = 0; i < 10; i++) {
-                        for (int j = 0; j < 10; j++) {
+                    boolean[][] matrix = new boolean[size][size];
+                    for (int i = 0; i < size; i++) {
+                        for (int j = 0; j < size; j++) {
                             matrix[i][j] = playerTable.table.getModel().getValueAt(i + 1, j + 1) != null;
                         }
                     }
@@ -152,8 +155,8 @@ public class MainFrame extends JDialog {
                         playerTable.table.setDefaultRenderer(Object.class, shipRenderer);
                         computerTable.table.setDefaultRenderer(Object.class, computerRenderer);
 
-                        for (int i = 1; i < 11; i++) {
-                            for (int j = 1; j < 11; j++) {
+                        for (int i = 1; i <= size; i++) {
+                            for (int j = 1; j <= size; j++) {
                                 if (playerTable.table.getModel().getValueAt(i, j) != null) {
                                     playerTable.table.getModel().setValueAt(null, i, j);
                                 }
@@ -222,8 +225,8 @@ public class MainFrame extends JDialog {
             Random rand = new Random();
             if (!alterComputerMove) {
                 do {
-                    row = rand.nextInt(10) + 1;
-                    col = rand.nextInt(10) + 1;
+                    row = rand.nextInt(size) + 1;
+                    col = rand.nextInt(size) + 1;
                 } while (playerTable.table.getModel().getValueAt(row, col) != null);
             }
             else {
@@ -270,19 +273,19 @@ public class MainFrame extends JDialog {
 
     private void stars(int row, int col, PlayTable table) {
         table.table.getModel().setValueAt("Х", row, col); // русская Х стоит, чтобы избежать лишней рекурсии
-        if (col < 10 && row < 10 && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
+        if (col < size && row < size && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
             table.table.getModel().setValueAt('*', row + 1, col + 1);
         }
-        if (col < 10 && row > 1 && table.table.getModel().getValueAt(row - 1, col + 1) == null) {
+        if (col < size && row > 1 && table.table.getModel().getValueAt(row - 1, col + 1) == null) {
             table.table.getModel().setValueAt('*', row - 1, col + 1);
         }
-        if (col > 1 && row < 10 && table.table.getModel().getValueAt(row + 1, col - 1) == null) {
+        if (col > 1 && row < size && table.table.getModel().getValueAt(row + 1, col - 1) == null) {
             table.table.getModel().setValueAt('*', row + 1, col - 1);
         }
         if (col > 1 && row > 1 && table.table.getModel().getValueAt(row - 1, col - 1) == null) {
             table.table.getModel().setValueAt('*', row - 1, col - 1);
         }
-        if (col < 10) {
+        if (col < size) {
             if (table.table.getModel().getValueAt(row, col + 1) == null) {
                 table.table.getModel().setValueAt('*', row, col + 1);
             }
@@ -298,7 +301,7 @@ public class MainFrame extends JDialog {
                 stars(row, col - 1, table);
             }
         }
-        if (row < 10) {
+        if (row < size) {
             if (table.table.getModel().getValueAt(row + 1, col) == null) {
                 table.table.getModel().setValueAt('*', row + 1, col);
             }

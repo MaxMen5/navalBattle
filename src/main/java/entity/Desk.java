@@ -2,17 +2,19 @@ package entity;
 
 import java.util.Random;
 
+import static GUI.MainFrame.size;
+
 public class Desk {
 
-    public boolean[][] matrix = new boolean[10][10];
+    public boolean[][] matrix = new boolean[size][size];
     int[] normalArr = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
 
     Random rand = new Random();
     ShipManager shipManager = new ShipManager();
 
     public Desk() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 matrix[i][j] = false;
             }
         }
@@ -45,9 +47,9 @@ public class Desk {
 
     private boolean diagonal(int i, int j) {
         if (i - 1 >= 0 && j - 1 >= 0 && matrix[i-1][j-1]) {return true;}
-        else if (i - 1 >= 0 && j + 1 < 10 && matrix[i-1][j+1]) {return true;}
-        else if (i + 1 < 10 && j - 1 >= 0 && matrix[i+1][j-1]) {return true;}
-        else if (i + 1 < 10 && j + 1 < 10 && matrix[i+1][j+1]) {return true;}
+        else if (i - 1 >= 0 && j + 1 < size && matrix[i-1][j+1]) {return true;}
+        else if (i + 1 < size && j - 1 >= 0 && matrix[i+1][j-1]) {return true;}
+        else if (i + 1 < size && j + 1 < size && matrix[i+1][j+1]) {return true;}
         else return false;
     }
 
@@ -131,22 +133,22 @@ public class Desk {
 
     private void setShipManager() {
         int ship = 0;
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 if (matrix[i][j] && !isContain(shipManager.matrix, i, j)) {
                     shipManager.addPoint(i, j, ship);
 
-                    if (i < 9 && matrix[i+1][j]) {
+                    if (i < size - 1 && matrix[i+1][j]) {
                         shipManager.addPoint(i+1, j, ship);
                         for (int k = 2; k < 4; k++) { // вертикальное расположение
-                            if (i < 10 - k && matrix[i+k][j]) shipManager.addPoint(i+k, j, ship);
+                            if (i < size - k && matrix[i+k][j]) shipManager.addPoint(i+k, j, ship);
                             else break;
                         }
                     }
-                    else if (j < 9 && matrix[i][j+1]) {
+                    else if (j < size - 1 && matrix[i][j+1]) {
                         shipManager.addPoint(i, j+1, ship);
                         for (int k = 2; k < 4; k++) { // горизонтальное расположение
-                            if (j < 10 - k && matrix[i][j+k]) shipManager.addPoint(i, j+k, ship);
+                            if (j < size - k && matrix[i][j+k]) shipManager.addPoint(i, j+k, ship);
                             else break;
                         }
                     }
@@ -161,8 +163,8 @@ public class Desk {
         for (int j = 9; j >= 0; j--) {
             int length = normalArr[j];
             while (true) {
-                int x = rand.nextInt(10);
-                int y = rand.nextInt(10);
+                int x = rand.nextInt(size);
+                int y = rand.nextInt(size);
                 int z = rand.nextInt(2);
                 if (isFree(x, y, z, length)) {
                     if (z == 0) {
@@ -186,18 +188,18 @@ public class Desk {
     private boolean isFree(int x, int y, int z, int length) {
         int ax = x - 1, ay = y - 1, by, dx;
         if (z == 0) { // вертикально
-            if (x + length - 1 > 9) return false;
+            if (x + length - 1 > size - 1) return false;
             by = y + 1;
             dx = x + length;
         } else { // горизонтально
-            if (y + length - 1 > 9) return false;
+            if (y + length - 1 > size - 1) return false;
             by = y + length;
             dx = x + 1;
         }
         if (ax < 0) ax = 0;
         if (ay < 0) ay = 0;
-        if (by > 9) by = 9;
-        if (dx > 9) dx = 9;
+        if (by > size - 1) by = size - 1;
+        if (dx > size - 1) dx = size - 1;
         for (int i = ax; i <= dx; i++) {
             for (int j = ay; j <= by; j++) {
                 if (matrix[i][j]) {
