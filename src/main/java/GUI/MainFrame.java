@@ -1,6 +1,5 @@
 package GUI;
 
-
 import GUI.renderers.ComputerRenderer;
 import GUI.renderers.PlayerRenderer;
 import GUI.renderers.ShipRenderer;
@@ -13,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import java.util.Random;
 
 public class MainFrame extends JDialog {
@@ -149,8 +149,8 @@ public class MainFrame extends JDialog {
                             matrix[i][j] = playerTable.table.getModel().getValueAt(i + 1, j + 1) != null;
                         }
                     }
-                    playerDesk.playerLayout(matrix);
-                    if (playerDesk.checkMatrix(playerTable)) {
+                    playerDesk.playerLayout(matrix);    
+                    if (playerDesk.checkMatrix()) {
                         logPane.start();
                         logPane.playerTurn();
                         playerTable.table.removeMouseListener(playerTableMouseAdapter);
