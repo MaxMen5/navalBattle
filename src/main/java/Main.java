@@ -1,8 +1,9 @@
-import GUI.MainFrame;
+
+import GUI.Menu;
 
 public class Main {
     public static void main(String[] args) {
-        MainFrame frame = new MainFrame();
+        new Menu();
     }
 }
 

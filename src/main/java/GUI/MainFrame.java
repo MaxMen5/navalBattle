@@ -1,9 +1,7 @@
 package GUI;
 
-import GUI.renderers.ComputerRenderer;
-import GUI.renderers.PlayerRenderer;
-import GUI.renderers.ShipRenderer;
-import GUI.renderers.BlockedRenderer;
+import GUI.renderers.SelectedRenderer;
+import GUI.renderers.ShipAndBlockRenderer;
 import entity.Desk;
 
 import javax.swing.*;
@@ -15,30 +13,30 @@ import java.awt.event.WindowEvent;
 
 import java.util.Random;
 
+import static GUI.PlayTable.headers;
+import static utils.ComputerMoves.*;
+
 public class MainFrame extends JDialog {
 
     private PlayTable playerTable;
     private PlayTable computerTable;
-    private Desk playerDesk;
-    private Desk computerDesk;
+    private final Desk playerDesk = new Desk();
+    private final Desk computerDesk = new Desk();
 
     private MouseAdapter playerTableMouseAdapter;
 
     private int yourShip = 20;
     private int compShip = 20;
-    Random rand = new Random();
-    String[] headers = {"#", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"};
-    private final int[][] points = {{-1, -1}, {-1, -1}, {-1, -1}};
 
     private boolean isPlayerTurn = true;
     private boolean computerProcess = false;
     private boolean alterComputerMove = false;
 
     private final LogPane logPane = new LogPane();
-    private final PlayerRenderer playerRenderer = new PlayerRenderer();
-    private final ComputerRenderer computerRenderer = new ComputerRenderer();
-    private final BlockedRenderer blockedRenderer = new BlockedRenderer();
-    private ShipRenderer shipRenderer;
+    private final SelectedRenderer playerRenderer = new SelectedRenderer(true);
+    private final SelectedRenderer computerRenderer = new SelectedRenderer(false);
+    private final ShipAndBlockRenderer blockedRenderer = new ShipAndBlockRenderer();
+    private ShipAndBlockRenderer shipRenderer;
 
     public MainFrame() {
         setTitle("Морской бой");
@@ -123,10 +121,6 @@ public class MainFrame extends JDialog {
     private void shipLayout() {
         playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
         computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
-
-        computerDesk = new Desk();
-        playerDesk = new Desk();
-
         computerDesk.createAuto();
 
         playerTableMouseAdapter = new MouseAdapter() {
@@ -154,7 +148,7 @@ public class MainFrame extends JDialog {
                         logPane.start();
                         logPane.playerTurn();
                         playerTable.table.removeMouseListener(playerTableMouseAdapter);
-                        shipRenderer = new ShipRenderer(playerDesk);
+                        shipRenderer = new ShipAndBlockRenderer(playerDesk);
                         playerTable.table.setDefaultRenderer(Object.class, shipRenderer);
                         computerTable.table.setDefaultRenderer(Object.class, computerRenderer);
 
@@ -222,25 +216,21 @@ public class MainFrame extends JDialog {
     }
 
     private void computerMove() {
-        //
         Timer timer = new Timer(1000, ev -> {
             ((Timer) ev.getSource()).stop();
             int row, col;
+            Random rand = new Random();
             if (!alterComputerMove) {
                 do {
-                    row = rand.nextInt(10);
-                    col = rand.nextInt(10);
-                    row++;
-                    col++;
+                    row = rand.nextInt(10) + 1;
+                    col = rand.nextInt(10) + 1;
                 } while (playerTable.table.getModel().getValueAt(row, col) != null);
             }
             else {
                 do {
                     int[] point = alterMove();
-                    row = point[0];
-                    col = point[1];
-                    row++;
-                    col++;
+                    row = ++point[0];
+                    col = ++point[1];
                 } while (playerTable.table.getModel().getValueAt(row, col) != null);
             }
             int shot = playerDesk.shot(col, row);
@@ -276,106 +266,6 @@ public class MainFrame extends JDialog {
         });
         timer.setRepeats(false);
         timer.start();
-    }
-
-    private int[] alterMove() {
-        int[] point = {-1, -1};
-        if (points[1][0] == -1) { // Если ранение только одно
-            int row = points[0][0];
-            int col = points[0][1];
-            while (true) {
-                int shot = rand.nextInt(4);
-                if (shot == 0 && row > 0) { // верх
-                    point[0] = row - 1;
-                    point[1] = col;
-                    break;
-                }
-                else if (shot == 1 && col < 9) { // право
-                    point[0] = row;
-                    point[1] = col + 1;
-                    break;
-                }
-                else if (shot == 2 && row < 9) { // низ
-                    point[0] = row + 1;
-                    point[1] = col;
-                    break;
-                }
-                else if (shot == 3 && col > 0) { // лево
-                    point[0] = row;
-                    point[1] = col - 1;
-                    break;
-                }
-            }
-        }
-        else { // Если ранений несколько
-            if (points[0][0] == points[1][0]) { // горизонтальное расположение
-                int row = points[0][0];
-                int left = points[0][1];
-                int right = points[0][1];
-                if (points[1][1] > right) right = points[1][1];
-                else left = points[1][1];
-
-                if (points[2][1] != -1) {
-                    if (points[2][1] > right) right = points[2][1];
-                    if (points[2][1] < left) left = points[2][1];
-                }
-                while (true) {
-                    int shot = rand.nextInt(2);
-                    point[0] = row;
-                    if (shot == 0 && right < 9) { // бьем правее
-                        point[1] = right + 1;
-                        break;
-                    }
-                    if (shot == 1 && left > 0) { // бьем левее
-                        point[1] = left - 1;
-                        break;
-                    }
-                }
-
-            }
-            else { // вертикальное расположение
-                int col = points[0][1];
-                int up = points[0][0];
-                int down = points[0][0];
-                if (points[1][0] > down) down = points[1][0];
-                else up = points[1][0];
-
-                if (points[2][0] != -1) {
-                    if (points[2][0] > down) down = points[2][0];
-                    if (points[2][0] < up) up = points[2][0];
-                }
-                while (true) {
-                    int shot = rand.nextInt(2);
-                    point[1] = col;
-                    if (shot == 0 && down < 9) { // бьем ниже
-                        point[0] = down + 1;
-                        break;
-                    }
-                    if (shot == 1 && up > 0) { // бьем выше
-                        point[0] = up - 1;
-                        break;
-                    }
-                }
-            }
-        }
-        return point;
-    }
-
-    public void cleanPoints() {
-        for (int i = 0; i < 3; i++) {
-            points[i][0] = -1;
-            points[i][1] = -1;
-        }
-    }
-
-    public void addPoints(int col, int row) {
-        for (int i = 0; i < 3; i++) {
-            if (points[i][0] == -1) {
-                points[i][0] = row;
-                points[i][1] = col;
-                break;
-            }
-        }
     }
 
     private void stars(int row, int col, PlayTable table) {
