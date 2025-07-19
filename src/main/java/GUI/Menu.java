@@ -8,7 +8,7 @@ import java.awt.event.MouseEvent;
 public class Menu extends JFrame {
 
     public Menu() {
-        setTitle("Кнопки по центру");
+        setTitle("Меню");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 200);
         setResizable(false);
@@ -19,7 +19,7 @@ public class Menu extends JFrame {
 
         JButton classic = new JButton("Классическая игра");
         classic.setFocusPainted(false);
-        JButton mod = new JButton("В разработке...");
+        JButton mod = new JButton("Настраиваемая игра");
         mod.setFocusPainted(false);
 
         classic.setAlignmentX(Component.CENTER_ALIGNMENT);
