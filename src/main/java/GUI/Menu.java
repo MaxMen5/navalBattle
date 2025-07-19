@@ -39,7 +39,8 @@ public class Menu extends JFrame {
         classic.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                new GameFrame(Menu.this, 10);
+                int[] normalArr = {1, 2, 3, 4};
+                new GameFrame(Menu.this, 10, normalArr);
                 setVisible(false);
             }
         });

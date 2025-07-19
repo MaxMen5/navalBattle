@@ -8,10 +8,10 @@ public class LogPane extends JTextPane {
 
     StyledDocument doc = getStyledDocument();
 
-    public LogPane() {
+    public LogPane(int[] shipArr) {
         setFont(new Font("Arial", Font.BOLD, 24));
-        setText("Расставьте корабли на своем поле. Нужно расставить: 1 четырехпалубник, " +
-                "2 трехпалубника, 3 двухпалубника, 4 однопалубника, После завершения нажмите кнопку \"#\" на своем поле.");
+        setText("Расставьте корабли на своем поле. Нужно расставить: " + shipArr[0] + " четырехпалубник, " + shipArr[1] +
+                " трехпалубник, " + shipArr[2] + " двухпалубник, " + shipArr[3] + " однопалубник. После завершения нажмите кнопку \"#\" на своем поле.");
     }
 
     public void appendColoredText(String text, Color color) {

@@ -29,21 +29,33 @@ public class GameFrame extends JFrame {
     private MouseAdapter playerTableMouseAdapter;
     private JButton exitButton;
 
-    private int yourShip = 20;
-    private int compShip = 20;
+    private int yourShip;
+    private int compShip;
+    private final int[] shipArr;
+
+    private int notNullPoints = 0;
+    private final double criticalValue;
 
     private boolean isPlayerTurn = true;
     private boolean computerProcess = false;
     private boolean alterComputerMove = false;
 
-    private final LogPane logPane = new LogPane();
+    private LogPane logPane;
     private final SelectedRenderer playerRenderer = new SelectedRenderer(true);
     private final SelectedRenderer computerRenderer = new SelectedRenderer(false);
     private final ShipAndBlockRenderer blockedRenderer = new ShipAndBlockRenderer();
     private ShipAndBlockRenderer shipRenderer;
 
-    public GameFrame(Menu menu, int size) {
+    private final Menu menu;
+
+    public GameFrame(Menu menu, int size, int[] shipArr) {
         this.size = size;
+        this.menu = menu;
+        this.shipArr = shipArr;
+        criticalValue = size * size * 0.85;
+        for (int i = 0, len = 4; i < shipArr.length; i++, len--) yourShip += shipArr[i] * len;
+        compShip = yourShip;
+        System.out.println(compShip);
 
         createGUI();
 
@@ -73,7 +85,6 @@ public class GameFrame extends JFrame {
     private void createGUI() {
         // Получаем цвет фона основного окна
         Color bgColor = getBackground();
-
         playerTable = new PlayTable(size);
         computerTable = new PlayTable(size);
 
@@ -82,6 +93,7 @@ public class GameFrame extends JFrame {
         JPanel computerPanel = createTablePanel("Поле противника", computerTable, bgColor);
 
         // Настраиваем панель логов
+        logPane = new LogPane(shipArr);
         logPane.setPreferredSize(new Dimension(0, 100));
         logPane.setMinimumSize(new Dimension(0, 50));
         logPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
@@ -178,8 +190,8 @@ public class GameFrame extends JFrame {
         playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
         computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
 
-        playerDesk = new Desk(size);
-        computerDesk = new Desk(size);
+        playerDesk = new Desk(size, shipArr, yourShip);
+        computerDesk = new Desk(size, shipArr, compShip);
 
         computerDesk.createAuto();
 
@@ -256,11 +268,11 @@ public class GameFrame extends JFrame {
                         if (shot == 2) { // потопление
                             computerTable.table.getModel().setValueAt("X", row, col);
                             logPane.playerSink(row, headers[col]);
-                            stars(row, col, computerTable);
+                            stars(row, col, computerTable, false);
                             compShip--;
                             if (compShip == 0) {
                                 logPane.playerWin();
-                                endGame();
+                                endGame(true);
                             }
                             logPane.playerTurn();
                         }
@@ -281,10 +293,32 @@ public class GameFrame extends JFrame {
             int row, col;
             Random rand = new Random();
             if (!alterComputerMove) {
-                do {
-                    row = rand.nextInt(size) + 1;
-                    col = rand.nextInt(size) + 1;
-                } while (playerTable.table.getModel().getValueAt(row, col) != null);
+                if (criticalValue <= notNullPoints) {
+                    int index = rand.nextInt(size * size - notNullPoints);
+                    int count = -1;
+                    row = -1;
+                    col = -1;
+                    for (int i = 1; i <= size; i++) {
+                        for (int j = 1; j <= size; j++) {
+                            if (playerTable.table.getModel().getValueAt(i, j) == null) {
+                                count++;
+                                if (count == index) {
+                                    row = i;
+                                    col = j;
+                                    break;
+                                }
+                            }
+                        }
+                        if (count == index) break;
+                    }
+
+                }
+                else {
+                    do {
+                        row = rand.nextInt(size) + 1;
+                        col = rand.nextInt(size) + 1;
+                    } while (playerTable.table.getModel().getValueAt(row, col) != null);
+                }
             }
             else {
                 do {
@@ -314,74 +348,86 @@ public class GameFrame extends JFrame {
                 cleanPoints();
                 playerTable.table.getModel().setValueAt("X", row, col);
                 logPane.computerSink(row, headers[col]);
-                stars(row, col, playerTable);
+                stars(row, col, playerTable, true);
                 yourShip--;
                 if (yourShip == 0) {
                     logPane.computerWin();
-                    endGame();
+                    endGame(false);
                 }
                 logPane.computerTurn();
                 computerMove();
             }
+            notNullPoints++;
         });
         timer.setRepeats(false);
         timer.start();
     }
 
-    private void stars(int row, int col, PlayTable table) {
+    private void stars(int row, int col, PlayTable table, boolean isComputer) {
         table.table.getModel().setValueAt("Х", row, col); // русская Х стоит, чтобы избежать лишней рекурсии
         if (col < size && row < size && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
             table.table.getModel().setValueAt('*', row + 1, col + 1);
+            if (isComputer) notNullPoints++;
         }
         if (col < size && row > 1 && table.table.getModel().getValueAt(row - 1, col + 1) == null) {
             table.table.getModel().setValueAt('*', row - 1, col + 1);
+            if (isComputer) notNullPoints++;
         }
         if (col > 1 && row < size && table.table.getModel().getValueAt(row + 1, col - 1) == null) {
             table.table.getModel().setValueAt('*', row + 1, col - 1);
+            if (isComputer) notNullPoints++;
         }
         if (col > 1 && row > 1 && table.table.getModel().getValueAt(row - 1, col - 1) == null) {
             table.table.getModel().setValueAt('*', row - 1, col - 1);
+            if (isComputer) notNullPoints++;
         }
         if (col < size) {
             if (table.table.getModel().getValueAt(row, col + 1) == null) {
                 table.table.getModel().setValueAt('*', row, col + 1);
+                if (isComputer) notNullPoints++;
             }
             if (table.table.getModel().getValueAt(row, col + 1) == "X") {
-                stars(row, col + 1, table);
+                stars(row, col + 1, table, isComputer);
             }
         }
         if (col > 1) {
             if (table.table.getModel().getValueAt(row, col - 1) == null) {
                 table.table.getModel().setValueAt('*', row, col - 1);
+                if (isComputer) notNullPoints++;
             }
             if (table.table.getModel().getValueAt(row, col - 1) == "X") {
-                stars(row, col - 1, table);
+                stars(row, col - 1, table, isComputer);
             }
         }
         if (row < size) {
             if (table.table.getModel().getValueAt(row + 1, col) == null) {
                 table.table.getModel().setValueAt('*', row + 1, col);
+                if (isComputer) notNullPoints++;
             }
             if (table.table.getModel().getValueAt(row + 1, col) == "X") {
-                stars(row + 1, col, table);
+                stars(row + 1, col, table, isComputer);
             }
         }
         if (row > 1) {
             if (table.table.getModel().getValueAt(row - 1, col) == null) {
                 table.table.getModel().setValueAt('*', row - 1, col);
+                if (isComputer) notNullPoints++;
             }
             if (table.table.getModel().getValueAt(row - 1, col) == "X") {
-                stars(row - 1, col, table);
+                stars(row - 1, col, table, isComputer);
             }
         }
     }
 
-    private void endGame() {
+    private void endGame(boolean isYourWin) {
+        UIManager.put("Button.focus", new Color(0, 0, 0, 0));
         JOptionPane.showConfirmDialog(
                 GameFrame.this,
+                isYourWin ? "Поздравляем с победой!" : "К сожалению вы проиграли( Попробуете еще раз?",
                 "Конец игры!",
-                "Поздравляем",
                 JOptionPane.DEFAULT_OPTION);
+        UIManager.put("Button.focus", UIManager.getDefaults().getColor("Button.focus"));
+        menu.setVisible(true);
         dispose();
     }
 

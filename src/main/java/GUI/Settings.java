@@ -11,17 +11,18 @@ import java.awt.event.MouseEvent;
 public class Settings extends JFrame {
 
     private static final int MAX = 12;
-    private static final int MIN = 9;
+    private static final int MIN = 7;
 
     private JButton moreButton;
     private JButton lessButton;
     private JLabel sizeLabel;
+    private final JLabel[] shipLabels = new JLabel[4];
     private JButton startButton;
     private JButton backButton;
     private int size = 10;
-
-    private String[] labels = {"Четырехпалубников: ", "Трехпалубников: ", "Двухпалубников: ", "Однопалубников: "};
-    private int[] size10 = {1, 2, 3, 4};
+    private final String[] labels = {"Четырехпалубников: ", "Трехпалубников: ", "Двухпалубников: ", "Однопалубников: "};
+    private final int[][] sizeArr = {{0, 1, 2, 3}, {1, 1, 1, 4}, {1, 1, 2, 5}, {1, 2, 3, 4}, {1, 3, 3, 5}, {2, 3, 3, 6}};
+    // 9 - 16, 8 - 13, 7 - 10, 11 - 24, 12 - 29
 
     public Settings(Menu menu) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,6 +37,7 @@ public class Settings extends JFrame {
             lessButton.setEnabled(size != MIN);
             moreButton.setEnabled(size != MAX);
             sizeLabel.setText(String.valueOf(size));
+            for (int i = 0; i < 4; i++) shipLabels[i].setText(labels[i] + sizeArr[size - 7][i]);
         });
 
         lessButton.addActionListener(e -> {
@@ -43,12 +45,13 @@ public class Settings extends JFrame {
             lessButton.setEnabled(size != MIN);
             moreButton.setEnabled(size != MAX);
             sizeLabel.setText(String.valueOf(size));
+            for (int i = 0; i < 4; i++) shipLabels[i].setText(labels[i] + sizeArr[size - 7][i]);
         });
 
         startButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                new GameFrame(menu, Integer.parseInt(sizeLabel.getText()));
+                new GameFrame(menu, size, sizeArr[size - 7]);
                 dispose();
             }
         });
@@ -100,14 +103,15 @@ public class Settings extends JFrame {
         entriesPanel.setLayout(new BoxLayout(entriesPanel, BoxLayout.Y_AXIS));
         entriesPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        for (int row = 0; row < 4; row++) {
+        for (int i = 0; i < 4; i++) {
             JLabel entryLabel = new JLabel();
-            entryLabel.setText(labels[row] + (size10[row]));
+            entryLabel.setText(labels[i] + (sizeArr[3][i]));
             entryLabel.setFont(new Font("Arial", Font.BOLD, 24));
             entryLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
             entryLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
             entriesPanel.add(entryLabel);
             entriesPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            shipLabels[i] = entryLabel;
         }
 
         mainPanel.add(entriesPanel);

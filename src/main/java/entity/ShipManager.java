@@ -1,40 +1,36 @@
 package entity;
 
 public class ShipManager {
-    // Вспомогательный подкласс
+
     public static class Ship {
         int row = -1;
         int col = -1;
         int ship = -1;
     }
 
-    public Ship[] matrix = new Ship[20];
+    public Ship[] matrix;
 
-    // Конструктор
-    public ShipManager() {
-        for (int i = 0; i < matrix.length; i++) {
-            matrix[i] = new Ship();
-        }
+    public ShipManager(int segments) {
+        matrix = new Ship[segments];
+        for (int i = 0; i < matrix.length; i++) matrix[i] = new Ship();
     }
 
-    // Методы
-
     public void addPoint(int row, int col, int ship) {
-        for (int i = 0; i < 20; i++) {
-            if (matrix[i].col == -1) {
-                matrix[i].col = col;
-                matrix[i].row = row;
-                matrix[i].ship = ship;
+        for (Ship value : matrix) {
+            if (value.col == -1) {
+                value.col = col;
+                value.row = row;
+                value.ship = ship;
                 break;
             }
         }
     }
 
     public int shot(int row, int col) {
-        for (int i = 0; i < 20; i++) {
-            if (matrix[i].col == col && matrix[i].row == row) {
-                int ans = matrix[i].ship;
-                matrix[i].ship = -1;
+        for (Ship ship : matrix) {
+            if (ship.col == col && ship.row == row) {
+                int ans = ship.ship;
+                ship.ship = -1;
                 return ans;
             }
         }
@@ -42,10 +38,18 @@ public class ShipManager {
     }
 
     public boolean isSink(int ship) {
-        for (int i = 0; i < 20; i++) {
-            if (matrix[i].ship == ship) return false;
+        for (Ship value : matrix) {
+            if (value.ship == ship) return false;
         }
         return true;
+    }
+
+    public boolean isContain(int row, int col) {
+        for (Ship ship : matrix) {
+            if (ship.ship == -1) return false;
+            else if (ship.row == row && ship.col == col) return true;
+        }
+        return false;
     }
 
 }

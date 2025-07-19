@@ -5,15 +5,26 @@ import java.util.Random;
 public class Desk {
 
     public boolean[][] matrix;
-    int[] normalArr = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
+    int[] normalArr;
     int size;
+    int countShip = 0;
+    int segments;
+    int magicValue = 0;
 
     Random rand = new Random();
-    ShipManager shipManager = new ShipManager();
+    ShipManager shipManager;
 
-    public Desk(int size) {
+    public Desk(int size, int[] shipArr, int segments) {
         this.size = size;
         this.matrix = new boolean[size][size];
+        this.segments = segments;
+        shipManager = new ShipManager(segments);
+        for (int value : shipArr) countShip += value;
+        normalArr = new int[countShip];
+        for (int i = shipArr.length - 1, len = 1,  k = 0; i >= 0; i--, len++) {
+            for (int j = 0; j < shipArr[i]; j++, k++) normalArr[k] = len;
+        }
+        for (int i = 0, k = 3; i < shipArr.length - 1; i++, k--) magicValue += shipArr[i] * k;
     }
 
     public void playerLayout(boolean[][] matrix) {
@@ -33,42 +44,36 @@ public class Desk {
         }
     }
 
-    private boolean isContain(ShipManager.Ship[] array, int row, int col) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i].ship == -1) return false;
-            else if (array[i].row == row && array[i].col == col) return true;
-        }
-        return false;
-    }
-
     private boolean diagonal(int i, int j) {
-        if (i - 1 >= 0 && j - 1 >= 0 && matrix[i-1][j-1]) {return true;}
-        else if (i - 1 >= 0 && j + 1 < size && matrix[i-1][j+1]) {return true;}
-        else if (i + 1 < size && j - 1 >= 0 && matrix[i+1][j-1]) {return true;}
-        else if (i + 1 < size && j + 1 < size && matrix[i+1][j+1]) {return true;}
-        else return false;
+        return (i - 1 >= 0 && j - 1 >= 0 && matrix[i - 1][j - 1]) ||
+                (i - 1 >= 0 && j + 1 < size && matrix[i - 1][j + 1]) ||
+                (i + 1 < size && j - 1 >= 0 && matrix[i + 1][j - 1]) ||
+                (i + 1 < size && j + 1 < size && matrix[i + 1][j + 1]);
     }
 
     public boolean checkMatrix() {
         int count = 0;
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 if(matrix[i][j]) {
                     count++;
                     if (diagonal(i, j)) return false;
                 }
             }
         }
-        if (count != 20) return false;
+        if (count != segments) return false;
 
-        int[] list = new int[30]; //
+        int length = segments * 2 - magicValue;
+        System.out.println(length);
+
+        int[] list = new int[length];
         int ship = 0;
 
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                if (matrix[i][j]) {ship++;}
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (matrix[i][j]) ship++;
                 else if (ship > 0) {
-                    for (int k = 0; k < 30; k++) {
+                    for (int k = 0; k < length; k++) {
                         if (list[k] == 0) {
                             list[k] = ship;
                             break;
@@ -76,8 +81,8 @@ public class Desk {
                     }
                     ship = 0;
                 }
-                if (j == matrix[i].length - 1 && ship > 0) {
-                    for (int k = 0; k < 30; k++) {
+                if (j == size - 1 && ship > 0) {
+                    for (int k = 0; k < length; k++) {
                         if (list[k] == 0) {
                             list[k] = ship;
                             break;
@@ -88,11 +93,11 @@ public class Desk {
             }
         }
 
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                if (matrix[j][i]) {ship++;}
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (matrix[j][i]) ship++;
                 else if (ship > 0) {
-                    for (int k = 0; k < 30; k++) {
+                    for (int k = 0; k < length; k++) {
                         if (list[k] == 0) {
                             list[k] = ship;
                             break;
@@ -100,8 +105,8 @@ public class Desk {
                     }
                     ship = 0;
                 }
-                if (j == matrix[i].length - 1 && ship > 0) {
-                    for (int k = 0; k < 30; k++) {
+                if (j == size - 1 && ship > 0) {
+                    for (int k = 0; k < length; k++) {
                         if (list[k] == 0) {
                             list[k] = ship;
                             break;
@@ -112,8 +117,8 @@ public class Desk {
             }
         }
 
-        for (int i = 0; i < 30; i++) {
-            for (int j = i + 1; j < 30; j++) {
+        for (int i = 0; i < length; i++) {
+            for (int j = i + 1; j < length; j++) {
                 if (list[i] > list[j]) {
                     int temp = list[i];
                     list[i] = list[j];
@@ -121,7 +126,8 @@ public class Desk {
                 }
             }
         }
-        for (int i = 0; i < 10; i++) if (list[i+20] != normalArr[i]) return false;
+
+        for (int i = 0; i < normalArr.length; i++) if (list[i + length - normalArr.length] != normalArr[i]) return false;
 
         setShipManager();
         return true;
@@ -131,7 +137,7 @@ public class Desk {
         int ship = 0;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (matrix[i][j] && !isContain(shipManager.matrix, i, j)) {
+                if (matrix[i][j] && !shipManager.isContain(i, j)) {
                     shipManager.addPoint(i, j, ship);
 
                     if (i < size - 1 && matrix[i+1][j]) {
@@ -156,7 +162,7 @@ public class Desk {
 
     public void createAuto() {
 
-        for (int j = 9; j >= 0; j--) {
+        for (int j = normalArr.length - 1; j >= 0; j--) {
             int length = normalArr[j];
             while (true) {
                 int x = rand.nextInt(size);
@@ -198,7 +204,7 @@ public class Desk {
         if (dx > size - 1) dx = size - 1;
         for (int i = ax; i <= dx; i++) {
             for (int j = ay; j <= by; j++) {
-                if (matrix[i][j]) { // какая то странная ошибка иногда
+                if (matrix[i][j]) {
                     return false;
                 }
             }
