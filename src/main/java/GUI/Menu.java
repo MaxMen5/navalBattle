@@ -11,13 +11,16 @@ public class Menu extends JFrame {
         setTitle("Кнопки по центру");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 200);
+        setResizable(false);
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JButton classic = new JButton("Классическая игра");
+        classic.setFocusPainted(false);
         JButton mod = new JButton("В разработке...");
+        mod.setFocusPainted(false);
 
         classic.setAlignmentX(Component.CENTER_ALIGNMENT);
         mod.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -31,24 +34,21 @@ public class Menu extends JFrame {
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
-        JTextField sizeL = new JTextField("12");
-        add(sizeL, BorderLayout.NORTH);
-
         setVisible(true);
 
         classic.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                new MainFrame(10);
+            public void mousePressed(MouseEvent e) {
+                new GameFrame(Menu.this, 10);
+                setVisible(false);
             }
         });
 
         mod.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                new MainFrame(Integer.parseInt(sizeL.getText()));
-                // max 13
-                // min 8? or 5
+            public void mousePressed(MouseEvent e) {
+                new Settings(Menu.this);
+                setVisible(false);
             }
         });
     }

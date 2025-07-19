@@ -1,5 +1,8 @@
 package GUI;
 
+import GUI.CustomComponents.ExitButton;
+import GUI.CustomComponents.LogPane;
+import GUI.CustomComponents.PlayTable;
 import GUI.renderers.SelectedRenderer;
 import GUI.renderers.ShipAndBlockRenderer;
 import entity.Desk;
@@ -8,15 +11,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import java.util.Random;
 
-import static GUI.PlayTable.headers;
+import static GUI.CustomComponents.PlayTable.headers;
 import static utils.ComputerMoves.*;
 
-public class MainFrame extends JDialog {
+public class GameFrame extends JFrame {
 
     public int size;
 
@@ -26,6 +27,7 @@ public class MainFrame extends JDialog {
     private Desk computerDesk;
 
     private MouseAdapter playerTableMouseAdapter;
+    private JButton exitButton;
 
     private int yourShip = 20;
     private int compShip = 20;
@@ -40,29 +42,30 @@ public class MainFrame extends JDialog {
     private final ShipAndBlockRenderer blockedRenderer = new ShipAndBlockRenderer();
     private ShipAndBlockRenderer shipRenderer;
 
-    public MainFrame(int size) {
+    public GameFrame(Menu menu, int size) {
         this.size = size;
-        setTitle("Морской бой");
+
         createGUI();
 
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                if (JOptionPane.showConfirmDialog(
-                        MainFrame.this,
-                        "Прогресс будет потерян! Вы действительно хотите выйти?",
-                        "Выход",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-                    dispose();
-                }
+        exitButton.addActionListener(e -> {
+            UIManager.put("Button.focus", new Color(0, 0, 0, 0));
+            int result = JOptionPane.showConfirmDialog(
+                    GameFrame.this,
+                    "Прогресс будет потерян! Вы действительно хотите выйти?",
+                    "Выход",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+            UIManager.put("Button.focus", UIManager.getDefaults().getColor("Button.focus"));
+            if (result == JOptionPane.YES_OPTION) {
+                menu.setVisible(true);
+                dispose();
             }
         });
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setSize(Toolkit.getDefaultToolkit().getScreenSize());
-        setModal(true);
-        setResizable(false);
+        setUndecorated(true); // Крутая штука!!
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -98,15 +101,13 @@ public class MainFrame extends JDialog {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
 
-        // 1. Верхняя панель с таблицами
+        // 1. Верхняя панель с таблицами (оставляем как есть)
         JPanel tablesPanel = new JPanel(new BorderLayout());
         tablesPanel.setBackground(bgColor);
-
         JPanel tablesContainer = new JPanel(new GridLayout(1, 2, 30, 0));
         tablesContainer.setBackground(bgColor);
         tablesContainer.add(computerPanel);
         tablesContainer.add(playerPanel);
-
         tablesPanel.add(tablesContainer, BorderLayout.CENTER);
 
         gbc.gridx = 0;
@@ -116,20 +117,36 @@ public class MainFrame extends JDialog {
         gbc.fill = GridBagConstraints.BOTH;
         add(tablesPanel, gbc);
 
-        // 2. Панель логов (теперь в центрирующем контейнере)
+        // 2. Создаем контейнер для логов И кнопки
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(bgColor);
+
+        // Панель логов (как у вас)
         JPanel logWrapper = new JPanel(new GridBagLayout());
         logWrapper.setBackground(bgColor);
         logWrapper.add(logContainer);
 
+        bottomPanel.add(logWrapper, BorderLayout.CENTER);
+
+        // Кнопка в правом нижнем углу
+        exitButton = new ExitButton();
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(bgColor);
+        buttonPanel.add(exitButton);
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Добавляем общую нижнюю панель
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 1.0;
         gbc.weighty = 0.1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(logWrapper, gbc);
+        add(bottomPanel, gbc);
 
         shipLayout();
     }
+
 
     private JPanel createTablePanel(String title, JComponent table, Color bgColor) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -361,7 +378,7 @@ public class MainFrame extends JDialog {
 
     private void endGame() {
         JOptionPane.showConfirmDialog(
-                MainFrame.this,
+                GameFrame.this,
                 "Конец игры!",
                 "Поздравляем",
                 JOptionPane.DEFAULT_OPTION);

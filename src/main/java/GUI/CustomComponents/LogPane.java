@@ -1,4 +1,4 @@
-package GUI;
+package GUI.CustomComponents;
 
 import javax.swing.*;
 import javax.swing.text.*;
