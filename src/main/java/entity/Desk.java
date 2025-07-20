@@ -64,8 +64,6 @@ public class Desk {
         if (count != segments) return false;
 
         int length = segments * 2 - magicValue;
-        System.out.println(length);
-
         int[] list = new int[length];
         int ship = 0;
 

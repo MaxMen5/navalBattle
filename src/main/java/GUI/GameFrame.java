@@ -6,6 +6,7 @@ import GUI.CustomComponents.PlayTable;
 import GUI.renderers.SelectedRenderer;
 import GUI.renderers.ShipAndBlockRenderer;
 import entity.Desk;
+import utils.ComputerMoves;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,6 +40,7 @@ public class GameFrame extends JFrame {
     private boolean isPlayerTurn = true;
     private boolean computerProcess = false;
     private boolean alterComputerMove = false;
+    private ComputerMoves move;
 
     private LogPane logPane;
     private final SelectedRenderer playerRenderer = new SelectedRenderer(true);
@@ -55,7 +57,7 @@ public class GameFrame extends JFrame {
         criticalValue = size * size * 0.85;
         for (int i = 0, len = 4; i < shipArr.length; i++, len--) yourShip += shipArr[i] * len;
         compShip = yourShip;
-        System.out.println(compShip);
+        move = new ComputerMoves(size);
 
         createGUI();
 
@@ -322,7 +324,7 @@ public class GameFrame extends JFrame {
             }
             else {
                 do {
-                    int[] point = alterMove();
+                    int[] point = move.alterMove();
                     row = ++point[0];
                     col = ++point[1];
                 } while (playerTable.table.getModel().getValueAt(row, col) != null);
