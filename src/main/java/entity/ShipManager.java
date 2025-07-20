@@ -2,13 +2,13 @@ package entity;
 
 public class ShipManager {
 
-    public static class Ship {
+    private static class Ship {
         int row = -1;
         int col = -1;
         int ship = -1;
     }
 
-    public Ship[] matrix;
+    private final Ship[] matrix;
 
     public ShipManager(int segments) {
         matrix = new Ship[segments];

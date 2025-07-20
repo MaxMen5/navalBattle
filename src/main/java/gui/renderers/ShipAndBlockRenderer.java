@@ -1,4 +1,4 @@
-package GUI.renderers;
+package gui.renderers;
 
 import entity.Desk;
 
@@ -8,11 +8,12 @@ import java.awt.*;
 
 public class ShipAndBlockRenderer extends DefaultTableCellRenderer {
 
-    Desk desk;
-    boolean isStart = false;
+    private Desk desk;
+    private final boolean isStart;
 
     public ShipAndBlockRenderer(Desk desk) {
         this.desk = desk;
+        isStart = false;
     }
 
     public ShipAndBlockRenderer() {
@@ -29,7 +30,7 @@ public class ShipAndBlockRenderer extends DefaultTableCellRenderer {
         if (!isStart) {
             if (row > 0 && column > 0) setForeground(Color.RED);
             else setForeground(table.getForeground());
-            if (row > 0 && column > 0 && desk.matrix[row - 1][column - 1]) setBackground(Color.BLACK);
+            if (row > 0 && column > 0 && desk.getMatrixValue(row - 1, column - 1)) setBackground(Color.BLACK);
             else setBackground(table.getBackground());
         }
         return this;

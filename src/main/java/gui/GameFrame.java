@@ -1,11 +1,12 @@
-package GUI;
+package gui;
 
-import GUI.CustomComponents.ExitButton;
-import GUI.CustomComponents.LogPane;
-import GUI.CustomComponents.PlayTable;
-import GUI.renderers.SelectedRenderer;
-import GUI.renderers.ShipAndBlockRenderer;
+import gui.customComponents.ExitButton;
+import gui.customComponents.LogPane;
+import gui.customComponents.PlayTable;
+import gui.renderers.SelectedRenderer;
+import gui.renderers.ShipAndBlockRenderer;
 import entity.Desk;
+import utils.Attack;
 import utils.ComputerMoves;
 
 import javax.swing.*;
@@ -15,12 +16,13 @@ import java.awt.event.MouseEvent;
 
 import java.util.Random;
 
-import static GUI.CustomComponents.PlayTable.headers;
+import static gui.customComponents.PlayTable.HEADERS;
 import static utils.ComputerMoves.*;
 
 public class GameFrame extends JFrame {
 
     public int size;
+    private final static int DELAY = 1000;
 
     private PlayTable playerTable;
     private PlayTable computerTable;
@@ -40,7 +42,7 @@ public class GameFrame extends JFrame {
     private boolean isPlayerTurn = true;
     private boolean computerProcess = false;
     private boolean alterComputerMove = false;
-    private ComputerMoves move;
+    private final ComputerMoves move;
 
     private LogPane logPane;
     private final SelectedRenderer playerRenderer = new SelectedRenderer(true);
@@ -48,14 +50,16 @@ public class GameFrame extends JFrame {
     private final ShipAndBlockRenderer blockedRenderer = new ShipAndBlockRenderer();
     private ShipAndBlockRenderer shipRenderer;
 
-    private final Menu menu;
+    private final MenuFrame menuFrame;
 
-    public GameFrame(Menu menu, int size, int[] shipArr) {
+    public GameFrame(MenuFrame menuFrame, int size, int[] shipArr) {
         this.size = size;
-        this.menu = menu;
+        this.menuFrame = menuFrame;
         this.shipArr = shipArr;
-        criticalValue = size * size * 0.85;
-        for (int i = 0, len = 4; i < shipArr.length; i++, len--) yourShip += shipArr[i] * len;
+        double percent = 0.85;
+        criticalValue = size * size * percent;
+        int maxLenShip = 4;
+        for (int i = 0, len = maxLenShip; i < shipArr.length; i++, len--) yourShip += shipArr[i] * len;
         compShip = yourShip;
         move = new ComputerMoves(size);
 
@@ -72,7 +76,7 @@ public class GameFrame extends JFrame {
             );
             UIManager.put("Button.focus", UIManager.getDefaults().getColor("Button.focus"));
             if (result == JOptionPane.YES_OPTION) {
-                menu.setVisible(true);
+                menuFrame.setVisible(true);
                 dispose();
             }
         });
@@ -158,7 +162,7 @@ public class GameFrame extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(bottomPanel, gbc);
 
-        shipLayout();
+        initShipLayout();
     }
 
 
@@ -188,9 +192,9 @@ public class GameFrame extends JFrame {
         return panel;
     }
 
-    private void shipLayout() {
-        playerTable.table.setDefaultRenderer(Object.class, playerRenderer);
-        computerTable.table.setDefaultRenderer(Object.class, blockedRenderer);
+    private void initShipLayout() {
+        playerTable.setRenderer(playerRenderer);
+        computerTable.setRenderer(blockedRenderer);
 
         playerDesk = new Desk(size, shipArr, yourShip);
         computerDesk = new Desk(size, shipArr, compShip);
@@ -201,35 +205,35 @@ public class GameFrame extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
-                int row = playerTable.table.rowAtPoint(p);
-                int col = playerTable.table.columnAtPoint(p);
+                int row = playerTable.getRow(p);
+                int col = playerTable.getCol(p);
 
                 if (row >= 1 && col >= 1) {
-                    if (playerTable.table.getModel().getValueAt(row, col) == null) {
-                        playerTable.table.getModel().setValueAt("X", row, col);
-                    } else playerTable.table.getModel().setValueAt(null, row, col);
+                    if (playerTable.getValue(row, col) == null) {
+                        playerTable.hit(row, col);
+                    } else playerTable.setNull(row, col);
                     playerDesk.changeMatrix(row, col);
                 }
                 if (row == 0 && col == 0) {
                     boolean[][] matrix = new boolean[size][size];
                     for (int i = 0; i < size; i++) {
                         for (int j = 0; j < size; j++) {
-                            matrix[i][j] = playerTable.table.getModel().getValueAt(i + 1, j + 1) != null;
+                            matrix[i][j] = playerTable.getValue(i + 1, j + 1) != null;
                         }
                     }
                     playerDesk.playerLayout(matrix);    
                     if (playerDesk.checkMatrix()) {
                         logPane.start();
                         logPane.playerTurn();
-                        playerTable.table.removeMouseListener(playerTableMouseAdapter);
+                        playerTable.removeMouse(playerTableMouseAdapter);
                         shipRenderer = new ShipAndBlockRenderer(playerDesk);
-                        playerTable.table.setDefaultRenderer(Object.class, shipRenderer);
-                        computerTable.table.setDefaultRenderer(Object.class, computerRenderer);
+                        playerTable.setRenderer(shipRenderer);
+                        computerTable.setRenderer(computerRenderer);
 
                         for (int i = 1; i <= size; i++) {
                             for (int j = 1; j <= size; j++) {
-                                if (playerTable.table.getModel().getValueAt(i, j) != null) {
-                                    playerTable.table.getModel().setValueAt(null, i, j);
+                                if (playerTable.getValue(i, j) != null) {
+                                    playerTable.setNull(i, j);
                                 }
                             }
                         }
@@ -240,7 +244,7 @@ public class GameFrame extends JFrame {
             }
         };
 
-        playerTable.table.addMouseListener(playerTableMouseAdapter);
+        playerTable.addMouse(playerTableMouseAdapter);
     }
 
     private void startGame() {
@@ -248,28 +252,28 @@ public class GameFrame extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
-                int row = playerTable.table.rowAtPoint(p);
-                int col = playerTable.table.columnAtPoint(p);
+                int row = playerTable.getRow(p);
+                int col = playerTable.getCol(p);
 
                 if (isPlayerTurn) {
                     computerProcess = false;
-                    if (computerTable.table.getModel().getValueAt(row, col) == null) {
-                        int shot = computerDesk.shot(col, row);
-                        if (shot == 0) { // мимо
-                            computerTable.table.getModel().setValueAt('*', row, col);
-                            logPane.playerMiss(row, headers[col]);
+                    if (computerTable.getValue(row, col) == null) {
+                        Attack shot = computerDesk.shot(col, row);
+                        if (shot == Attack.MISS) {
+                            computerTable.miss(row, col);
+                            logPane.playerMiss(row, HEADERS[col]);
                             isPlayerTurn = false;
                             logPane.computerTurn();
                         }
-                        if (shot == 1) { // ранение
-                            computerTable.table.getModel().setValueAt("X", row, col);
-                            logPane.playerHit(row, headers[col]);
+                        if (shot == Attack.HIT) {
+                            computerTable.hit(row, col);
+                            logPane.playerHit(row, HEADERS[col]);
                             compShip--;
                             logPane.playerTurn();
                         }
-                        if (shot == 2) { // потопление
-                            computerTable.table.getModel().setValueAt("X", row, col);
-                            logPane.playerSink(row, headers[col]);
+                        if (shot == Attack.SINK) {
+                            computerTable.hit(row, col);
+                            logPane.playerSink(row, HEADERS[col]);
                             stars(row, col, computerTable, false);
                             compShip--;
                             if (compShip == 0) {
@@ -286,11 +290,11 @@ public class GameFrame extends JFrame {
                 }
             }
         };
-        computerTable.table.addMouseListener(computerTableMouseAdapter);
+        computerTable.addMouse(computerTableMouseAdapter);
     }
 
     private void computerMove() {
-        Timer timer = new Timer(1000, ev -> {
+        Timer timer = new Timer(DELAY, ev -> {
             ((Timer) ev.getSource()).stop();
             int row, col;
             Random rand = new Random();
@@ -302,7 +306,7 @@ public class GameFrame extends JFrame {
                     col = -1;
                     for (int i = 1; i <= size; i++) {
                         for (int j = 1; j <= size; j++) {
-                            if (playerTable.table.getModel().getValueAt(i, j) == null) {
+                            if (playerTable.getValue(i, j) == null) {
                                 count++;
                                 if (count == index) {
                                     row = i;
@@ -319,7 +323,7 @@ public class GameFrame extends JFrame {
                     do {
                         row = rand.nextInt(size) + 1;
                         col = rand.nextInt(size) + 1;
-                    } while (playerTable.table.getModel().getValueAt(row, col) != null);
+                    } while (playerTable.getValue(row, col) != null);
                 }
             }
             else {
@@ -327,29 +331,29 @@ public class GameFrame extends JFrame {
                     int[] point = move.alterMove();
                     row = ++point[0];
                     col = ++point[1];
-                } while (playerTable.table.getModel().getValueAt(row, col) != null);
+                } while (playerTable.getValue(row, col) != null);
             }
-            int shot = playerDesk.shot(col, row);
-            if (shot == 0) { // мимо
-                playerTable.table.getModel().setValueAt('*', row, col);
-                logPane.computerMiss(row, headers[col]);
+            Attack shot = playerDesk.shot(col, row);
+            if (shot == Attack.MISS) {
+                playerTable.miss(row, col);
+                logPane.computerMiss(row, HEADERS[col]);
                 isPlayerTurn = true;
                 logPane.playerTurn();
             }
-            if (shot == 1) { // ранение
+            if (shot == Attack.HIT) {
                 alterComputerMove = true;
-                addPoints(col - 1, row - 1);
-                playerTable.table.getModel().setValueAt("X", row, col);
-                logPane.computerHit(row, headers[col]);
+                move.addPoints(col - 1, row - 1);
+                playerTable.hit(row, col);
+                logPane.computerHit(row, HEADERS[col]);
                 yourShip--;
                 logPane.computerTurn();
                 computerMove();
             }
-            if (shot == 2) { // потопление
+            if (shot == Attack.SINK) {
                 alterComputerMove = false;
-                cleanPoints();
-                playerTable.table.getModel().setValueAt("X", row, col);
-                logPane.computerSink(row, headers[col]);
+                move.cleanPoints();
+                playerTable.hit(row, col);
+                logPane.computerSink(row, HEADERS[col]);
                 stars(row, col, playerTable, true);
                 yourShip--;
                 if (yourShip == 0) {
@@ -365,60 +369,35 @@ public class GameFrame extends JFrame {
         timer.start();
     }
 
+    private void diagonalStar(int row, int col, PlayTable table, boolean isComputer) {
+        if (table.getValue(row, col) == null) {
+            table.miss(row, col);
+            if (isComputer) notNullPoints++;
+        }
+    }
+
+    private void straightStar(int row, int col, PlayTable table, boolean isComputer) {
+        if (table.getValue(row, col) == null) {
+            table.miss(row, col);
+            if (isComputer) notNullPoints++;
+        }
+        if (table.getValue(row, col) == "X") {
+            stars(row, col, table, isComputer);
+        }
+    }
+
     private void stars(int row, int col, PlayTable table, boolean isComputer) {
-        table.table.getModel().setValueAt("Х", row, col); // русская Х стоит, чтобы избежать лишней рекурсии
-        if (col < size && row < size && table.table.getModel().getValueAt(row + 1, col + 1) == null) {
-            table.table.getModel().setValueAt('*', row + 1, col + 1);
-            if (isComputer) notNullPoints++;
-        }
-        if (col < size && row > 1 && table.table.getModel().getValueAt(row - 1, col + 1) == null) {
-            table.table.getModel().setValueAt('*', row - 1, col + 1);
-            if (isComputer) notNullPoints++;
-        }
-        if (col > 1 && row < size && table.table.getModel().getValueAt(row + 1, col - 1) == null) {
-            table.table.getModel().setValueAt('*', row + 1, col - 1);
-            if (isComputer) notNullPoints++;
-        }
-        if (col > 1 && row > 1 && table.table.getModel().getValueAt(row - 1, col - 1) == null) {
-            table.table.getModel().setValueAt('*', row - 1, col - 1);
-            if (isComputer) notNullPoints++;
-        }
-        if (col < size) {
-            if (table.table.getModel().getValueAt(row, col + 1) == null) {
-                table.table.getModel().setValueAt('*', row, col + 1);
-                if (isComputer) notNullPoints++;
-            }
-            if (table.table.getModel().getValueAt(row, col + 1) == "X") {
-                stars(row, col + 1, table, isComputer);
-            }
-        }
-        if (col > 1) {
-            if (table.table.getModel().getValueAt(row, col - 1) == null) {
-                table.table.getModel().setValueAt('*', row, col - 1);
-                if (isComputer) notNullPoints++;
-            }
-            if (table.table.getModel().getValueAt(row, col - 1) == "X") {
-                stars(row, col - 1, table, isComputer);
-            }
-        }
-        if (row < size) {
-            if (table.table.getModel().getValueAt(row + 1, col) == null) {
-                table.table.getModel().setValueAt('*', row + 1, col);
-                if (isComputer) notNullPoints++;
-            }
-            if (table.table.getModel().getValueAt(row + 1, col) == "X") {
-                stars(row + 1, col, table, isComputer);
-            }
-        }
-        if (row > 1) {
-            if (table.table.getModel().getValueAt(row - 1, col) == null) {
-                table.table.getModel().setValueAt('*', row - 1, col);
-                if (isComputer) notNullPoints++;
-            }
-            if (table.table.getModel().getValueAt(row - 1, col) == "X") {
-                stars(row - 1, col, table, isComputer);
-            }
-        }
+        table.specialHit(row, col); // русская Х стоит, чтобы избежать лишней рекурсии
+
+        if (col < size && row < size) diagonalStar(row + 1, col + 1, table, isComputer);
+        if (col < size && row > 1) diagonalStar(row - 1, col + 1, table, isComputer);
+        if (col > 1 && row < size) diagonalStar(row + 1, col - 1, table, isComputer);
+        if (col > 1 && row > 1) diagonalStar(row - 1, col - 1, table, isComputer);
+
+        if (col < size) straightStar(row, col + 1, table, isComputer);
+        if (col > 1) straightStar(row, col - 1, table, isComputer);
+        if (row < size) straightStar(row + 1, col, table, isComputer);
+        if (row > 1) straightStar(row - 1, col, table, isComputer);
     }
 
     private void endGame(boolean isYourWin) {
@@ -429,7 +408,7 @@ public class GameFrame extends JFrame {
                 "Конец игры!",
                 JOptionPane.DEFAULT_OPTION);
         UIManager.put("Button.focus", UIManager.getDefaults().getColor("Button.focus"));
-        menu.setVisible(true);
+        menuFrame.setVisible(true);
         dispose();
     }
 

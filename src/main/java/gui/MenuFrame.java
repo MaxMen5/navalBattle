@@ -1,13 +1,13 @@
-package GUI;
+package gui;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class Menu extends JFrame {
+public class MenuFrame extends JFrame {
 
-    public Menu() {
+    public MenuFrame() {
         setTitle("Меню");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 200);
@@ -40,7 +40,7 @@ public class Menu extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 int[] normalArr = {1, 2, 3, 4};
-                new GameFrame(Menu.this, 10, normalArr);
+                new GameFrame(MenuFrame.this, 10, normalArr);
                 setVisible(false);
             }
         });
@@ -48,7 +48,7 @@ public class Menu extends JFrame {
         mod.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                new Settings(Menu.this);
+                new SettingsFrame(MenuFrame.this);
                 setVisible(false);
             }
         });

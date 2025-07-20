@@ -1,4 +1,4 @@
-package GUI.CustomComponents;
+package gui.customComponents;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -6,7 +6,7 @@ import java.awt.*;
 
 public class LogPane extends JTextPane {
 
-    StyledDocument doc = getStyledDocument();
+    private final StyledDocument doc = getStyledDocument();
 
     public LogPane(int[] shipArr) {
         setFont(new Font("Arial", Font.BOLD, 24));

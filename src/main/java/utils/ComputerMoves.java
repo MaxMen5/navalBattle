@@ -5,8 +5,8 @@ import java.util.Random;
 public class ComputerMoves {
 
     private final static Random rand = new Random();
-    private final static int[][] points = {{-1, -1}, {-1, -1}, {-1, -1}};
-    private int size;
+    private final int[][] points = {{-1, -1}, {-1, -1}, {-1, -1}};
+    private final int size;
 
     public ComputerMoves(int size) {
         this.size = size;
@@ -95,14 +95,14 @@ public class ComputerMoves {
         return point;
     }
 
-    public static void cleanPoints() {
+    public void cleanPoints() {
         for (int i = 0; i < 3; i++) {
             points[i][0] = -1;
             points[i][1] = -1;
         }
     }
 
-    public static void addPoints(int col, int row) {
+    public void addPoints(int col, int row) {
         for (int i = 0; i < 3; i++) {
             if (points[i][0] == -1) {
                 points[i][0] = row;
