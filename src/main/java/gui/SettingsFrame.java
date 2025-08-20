@@ -1,14 +1,14 @@
-package GUI;
+package gui;
 
-import GUI.CustomComponents.DirectionButton;
-import GUI.CustomComponents.ExitButton;
+import gui.customComponents.DirectionButton;
+import gui.customComponents.ExitButton;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class Settings extends JFrame {
+public class SettingsFrame extends JFrame {
 
     private static final int MAX = 12;
     private static final int MIN = 7;
@@ -24,7 +24,7 @@ public class Settings extends JFrame {
     private final int[][] sizeArr = {{0, 1, 2, 3}, {1, 1, 1, 4}, {1, 1, 2, 5}, {1, 2, 3, 4}, {1, 3, 3, 5}, {2, 3, 3, 6}};
     // 9 - 16, 8 - 13, 7 - 10, 11 - 24, 12 - 29
 
-    public Settings(Menu menu) {
+    public SettingsFrame(MenuFrame menuFrame) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 400);
         setUndecorated(true);
@@ -37,7 +37,7 @@ public class Settings extends JFrame {
             lessButton.setEnabled(size != MIN);
             moreButton.setEnabled(size != MAX);
             sizeLabel.setText(String.valueOf(size));
-            for (int i = 0; i < 4; i++) shipLabels[i].setText(labels[i] + sizeArr[size - 7][i]);
+            for (int i = 0; i < labels.length; i++) shipLabels[i].setText(labels[i] + sizeArr[size - MIN][i]);
         });
 
         lessButton.addActionListener(e -> {
@@ -45,13 +45,13 @@ public class Settings extends JFrame {
             lessButton.setEnabled(size != MIN);
             moreButton.setEnabled(size != MAX);
             sizeLabel.setText(String.valueOf(size));
-            for (int i = 0; i < 4; i++) shipLabels[i].setText(labels[i] + sizeArr[size - 7][i]);
+            for (int i = 0; i < labels.length; i++) shipLabels[i].setText(labels[i] + sizeArr[size - MIN][i]);
         });
 
         startButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                new GameFrame(menu, size, sizeArr[size - 7]);
+                new GameFrame(menuFrame, size, sizeArr[size - 7]);
                 dispose();
             }
         });
@@ -59,7 +59,7 @@ public class Settings extends JFrame {
         backButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                menu.setVisible(true);
+                menuFrame.setVisible(true);
                 dispose();
             }
         });
